@@ -1,0 +1,211 @@
+\section{Componentes Fortemente Conexos}
+\subsection{Dominós}
+
+\subsubsection*{Enunciado}
+Dominós são muito divertidos. Crianças gostam de posicionar as peças de dominó em pé, formando longas linhas. Quando um dominó cai, ele derruba o próximo, que por sua vez derruba o seguinte, e assim por diante, até o final da linha. Entretanto, às vezes uma peça de dominó não consegue derrubar a próxima; nesse caso, é preciso derrubá-la manualmente para que a reação em cadeia continue.
+
+Sua tarefa é determinar, dado o arranjo de algumas peças de dominó, o número mínimo de peças que devem ser derrubadas manualmente para que todas as peças caiam.
+
+\subsubsection*{Entrada}
+A primeira linha da entrada contém um inteiro que especifica o número de casos de teste a seguir.  
+Cada caso de teste começa com uma linha contendo dois inteiros, cada um não maior que 100.000. O primeiro inteiro \(n\) é o número de peças de dominó e o segundo inteiro \(m\) é o número de relações descritas em seguida. As peças de dominó são numeradas de \(1\) a \(n\).
+
+Cada uma das \(m\) linhas seguintes contém dois inteiros \(x\) e \(y\) indicando que, se a peça \(x\) cair, ela fará a peça \(y\) cair também.
+
+\subsubsection*{Saída}
+Para cada caso de teste, imprima uma linha contendo um inteiro, o número mínimo de peças que devem ser derrubadas manualmente para que todas as peças de dominó caiam.
+
+\subsubsection*{Exemplo de Entrada}
+\begin{verbatim}
+1
+3 2
+1 2
+2 3
+\end{verbatim}
+
+\subsubsection*{Exemplo de Saída}
+\begin{verbatim}
+1
+\end{verbatim}
+
+\begin{lstlisting}
+vi g[MAXN], rg[MAXN];
+vector<bool> vis;
+vi order;
+
+void dfs1(int v)
+{
+    vis[v] = true;
+    for (auto u : g[v])
+        if (!vis[u])
+            dfs1(u);
+    order.pb(v);
+}
+
+void dfs2(int v, int cid, vi &comp_id)
+{
+    comp_id[v] = cid;
+    for (auto u : rg[v])
+        if (comp_id[u] == -1)
+            dfs2(u, cid, comp_id);
+}
+
+int kosaraju(int n, vi &comp_id)
+{
+    vis.assign(n, false);
+    order.clear();
+    rep(i, 0, n)
+        if (!vis[i])
+            dfs1(i);
+
+    reverse(all(order));
+    comp_id.assign(n, -1);
+    int cid = 0;
+    for (auto v : order)
+        if (comp_id[v] == -1) {
+            dfs2(v, cid, comp_id);
+            cid++;
+        }
+    return cid;
+}
+
+vvi condensation(int n, const vi &comp_id, int compCount)
+{
+    vvi condensed(compCount);
+    vector<set<int>> temp(compCount);
+    rep(u, 0, n)
+        for (auto v : g[u])
+            if (comp_id[u] != comp_id[v])
+                temp[comp_id[u]].insert(comp_id[v]);
+
+    rep(i, 0, compCount)
+        for (auto v : temp[i])
+            condensed[i].pb(v);
+
+    return condensed;
+}
+
+void solve()
+{
+    int n, m; cin >> n >> m;
+    rep(i, 0, n) {
+        g[i].clear();
+        rg[i].clear();
+    }
+    rep(i, 0, m){
+        int x, y; cin >> x >> y;
+        x--; y--;
+        g[x].pb(y);
+        rg[y].pb(x);
+    }
+    vi comp_id;
+    int count = kosaraju(n, comp_id);
+    auto condensed = condensation(n, comp_id, count);
+    vi indegree(count, 0);
+    rep (i, 0, count) {
+        for (int v : condensed[i])
+            indegree[v]++;
+    }
+    int ans = 0;
+    rep (i, 0, count) {
+        if (indegree[i] == 0)
+            ans++;
+    }
+    cout << ans << endl;
+}
+\end{lstlisting}
+
+\subsection{Come and Go}
+
+\subsubsection*{Enunciado}
+Em uma certa cidade há \(N\) interseções conectadas por ruas de mão única e de mão dupla. Trata-se de uma cidade moderna, em que várias ruas possuem túneis ou viadutos. Evidentemente, deve ser possível viajar entre quaisquer duas interseções. Mais precisamente, dados duas interseções \(V\) e \(W\), deve ser possível viajar de \(V\) para \(W\) e de \(W\) para \(V\).
+
+Sua tarefa é escrever um programa que leia a descrição do sistema viário da cidade e determine se o requisito de conectividade está satisfeito ou não.
+
+\subsubsection*{Entrada}
+A entrada contém vários casos de teste. A primeira linha de um caso de teste contém dois inteiros \(N\) e \(M\), separados por um espaço, indicando o número de interseções (\(2 \le N \le 2000\)) e o número de ruas (\(2 \le M \le \frac{N(N-1)}{2}\)). As \(M\) linhas seguintes descrevem o sistema viário da cidade, onde cada linha descreve uma rua. A descrição de uma rua consiste de três inteiros \(V\), \(W\) e \(P\), separados por um espaço, onde \(V\) e \(W\) são identificadores distintos para as interseções (\(1 \le V, W \le N\), \(V \neq W\)) e \(P\) pode ser 1 ou 2; se \(P = 1\) a rua é de mão única, e o tráfego vai de \(V\) para \(W\); se \(P = 2\) a rua é de mão dupla e liga \(V\) e \(W\). Um par de interseções é conectado por, no máximo, uma rua.
+
+O último caso de teste é seguido por uma linha que contém apenas dois números zero, separados por um espaço.
+
+\subsubsection*{Saída}
+Para cada caso de teste, seu programa deve imprimir uma única linha contendo um inteiro \(G\), onde \(G\) é igual a 1 se a condição de conectividade for satisfeita, e \(G\) é igual a 0 caso contrário.
+
+\subsubsection*{Exemplo de Entrada}
+\begin{verbatim}
+4 5
+1 2 1
+1 3 2
+2 4 1
+3 4 1
+4 1 2
+3 2
+1 2 2
+1 3 2
+3 2
+1 2 2
+1 3 1
+4 2
+1 2 2
+3 4 2
+0 0
+\end{verbatim}
+
+\subsubsection*{Exemplo de Saída}
+\begin{verbatim}
+1
+1
+0
+0
+\end{verbatim}
+
+
+\begin{lstlisting}
+    void dfs(int node, vector<bool>& visited, vector<vector<pair<int, int>>>& graph) {
+    visited[node] = true;
+    for (const auto& v : graph[node]) {
+        int u = v.first;
+        if (!visited[u]) {
+            dfs(u, visited, graph);
+        }
+    }
+}
+
+bool isStronglyConnected(vector<vector<pair<int, int>>>& graph) {
+    int n = graph.size();
+
+    for (int i = 0; i < n; ++i) {
+        vector<bool> visited(n, false);
+        dfs(i, visited, graph);
+
+        if (find(visited.begin(), visited.end(), false) != visited.end()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+
+    int n, m;
+    while (cin >> n >> m && n && m) {
+        vector<vector<pair<int, int>>> graph(n);
+
+        for (int i = 0; i < m; ++i) {
+            int x, y, z;
+            cin >> x >> y >> z;
+            graph[x - 1].emplace_back(y - 1, z);
+            if (z == 2) {
+                graph[y - 1].emplace_back(x - 1, z);
+            }
+        }
+
+        cout << isStronglyConnected(graph) << endl;
+    }
+
+    return 0;
+}
+\end{lstlisting}

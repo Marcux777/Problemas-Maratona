@@ -1,0 +1,130 @@
+\section{Lowest Common Ancestor}
+\subsection{Ants Colony}
+
+\subsubsection*{Enunciado}
+Um grupo de formigas está realmente orgulhoso porque construiu uma colônia magnífica e grande. Contudo, o tamanho enorme se tornou um problema, pois muitas formigas não conhecem o caminho entre algumas partes da colônia e precisam desesperadamente da sua ajuda!
+
+A colônia foi construída como uma série de \(n\) formigueiros, conectados por túneis. As formigas numeraram os formigueiros sequencialmente à medida que os construíam. O primeiro formigueiro, numerado como \(0\), não exigiu nenhum túnel; mas, para cada formigueiro subsequente, de \(1\) a \(n-1\), foi construído exatamente um túnel que conecta o novo formigueiro a um dos formigueiros já existentes. Esse túnel é suficiente para permitir que qualquer formiga vá de um formigueiro a outro, possivelmente passando por outros formigueiros ao longo do caminho.
+
+Seu trabalho é, dada a estrutura da colônia e um conjunto de consultas, calcular para cada consulta o caminho mais curto entre dois formigueiros. O comprimento de um caminho é definido como a soma dos comprimentos de todos os túneis percorridos.
+
+\subsubsection*{Entrada}
+Cada caso de teste é fornecido em várias linhas:
+\begin{itemize}
+    \item A primeira linha contém um inteiro \(n\) (\(2 \le n \le 10^5\)), o número de formigueiros da colônia.
+    \item Cada uma das próximas \(n-1\) linhas contém dois inteiros: \(A[i]\) e \(L[i]\) (para \(i = 1,2,\dots,n-1\)), indicando que o formigueiro \(i\) foi conectado diretamente ao formigueiro \(A[i]\) com um túnel de comprimento \(L[i]\) (\(0 \le A[i] \le i-1\) e \(1 \le L[i] \le 10^9\)).
+    \item A próxima linha contém um inteiro \(q\) (\(1 \le q \le 10^5\)), o número de consultas.
+    \item Cada uma das próximas \(q\) linhas contém dois inteiros distintos \(s\) e \(t\) (\(0 \le s, t \le n-1\)), representando os formigueiros de origem e destino, respectivamente.
+\end{itemize}
+O último caso de teste é seguido por uma linha contendo um zero.
+
+\subsubsection*{Saída}
+Para cada caso de teste, imprima uma única linha contendo \(q\) inteiros, cada um representando o comprimento do caminho mais curto entre o par de formigueiros da consulta, na mesma ordem em que as consultas foram fornecidas.
+
+\subsubsection*{Exemplo de Entrada}
+\begin{verbatim}
+6
+0 8
+1 7
+1 9
+0 3
+4 2
+4
+2 3
+5 2
+1 4
+0 3
+2
+0 1
+2
+1 0
+0 1
+6
+0 1000000000
+1 1000000000
+2 1000000000
+3 1000000000
+4 1000000000
+1
+5 0
+0
+\end{verbatim}
+
+\subsubsection*{Exemplo de Saída}
+\begin{verbatim}
+16 20 11 17
+1 1
+5000000000
+\end{verbatim}
+
+
+\begin{lstlisting}
+int depth[MAXN], parent[MAXN][LOG], dist[MAXN];
+vector<pair<int, int>> g[MAXN];
+
+void dfs(int u, int par) {
+    parent[u][0] = par;
+    for(int i = 1; i < LOG; i++) {
+        if(parent[u][i-1] != -1) {
+            parent[u][i] = parent[parent[u][i-1]][i-1];
+        }
+    }
+    for(auto &it : g[u]) {
+        if(it.first == par) continue;
+        depth[it.first] = depth[u] + 1;
+        dist[it.first] = dist[u] + it.second;
+        dfs(it.first, u);
+    }
+}
+
+int lca(int u, int v) {
+    if(depth[u] < depth[v]) swap(u, v);
+    for(int i = LOG - 1; i >= 0; i--) {
+        if(parent[u][i] != -1 && depth[parent[u][i]] >= depth[v]) {
+            u = parent[u][i];
+        }
+    }
+    if(u == v) return u;
+    for(int i = LOG - 1; i >= 0; i--) {
+        if(parent[u][i] != parent[v][i]) {
+            u = parent[u][i];
+            v = parent[v][i];
+        }
+    }
+    return parent[u][0];
+}
+
+signed main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    cout.tie(NULL);
+    //freopen("saida.txt", "w", stdout);
+    int n;
+    while(cin >> n && n) {
+        for(int i = 0; i < n; i++) g[i].clear();
+        memset(parent, -1, sizeof(parent));
+        
+        for(int i = 1; i < n; i++) {
+            int a, w;
+            cin >> a >> w;
+            g[i].push_back({a, w});
+            g[a].push_back({i, w});
+        }
+        
+        depth[0] = dist[0] = 0;
+        dfs(0, -1);
+        
+        int q;
+        cin >> q;
+        vector<int>resp;
+        while(q--) {
+            int s, t;
+            cin >> s >> t;
+            int ancestor = lca(s, t);
+            resp.push_back(dist[s] + dist[t] - 2 * dist[ancestor]);
+        }
+        for(int i = 0; i <resp.size(); i++){
+            cout << resp[i] << (i == resp.size() - 1 ? '\n' : ' ');
+        }
+    }
+\end{lstlisting}

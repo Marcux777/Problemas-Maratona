@@ -1,0 +1,1216 @@
+\section{Dynamic Programming}
+\subsection{Grid Paths}
+Considere uma grade de \( n \times n \) cujos quadrados podem ter armadilhas. Não é permitido mover-se para um quadrado com armadilha. Sua tarefa é calcular o número de caminhos do quadrado superior esquerdo para o quadrado inferior direito, onde você só pode se mover para a direita ou para baixo.
+
+Na primeira linha da entrada contém um inteiro \( n \): o tamanho da grade.  
+Depois disso, há \( n \) linhas que descrevem a grade. Cada linha contém \( n \) caracteres:
+\begin{itemize}
+    \item \texttt{.} denota uma célula vazia;
+    \item \texttt{*} denota uma armadilha.
+\end{itemize}
+
+\subsubsection*{Saída}
+Imprima o número de caminhos possíveis, calculado módulo \( 10^9+7 \).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 1000
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+4
+....
+.*..
+...*
+*...
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+vector<vector<int>> DP;
+vector<string> grid;
+int N;
+
+signed main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+    cin >> N;
+    grid.resize(N);
+    DP.assign(N, vector<int>(N, 0));
+    DP[0][0] = 1;
+    for (auto &i : grid)
+        cin >> i;
+
+    if(grid[0][0] == '*'){cout << 0 << endl; return 0;}
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
+            if (grid[i][j] != '*')
+            {
+                if (i - 1 >= 0)
+                    DP[i][j] += DP[i - 1][j];
+                if (j - 1 >= 0)
+                    DP[i][j] += DP[i][j - 1];
+                DP[i][j] %= mod;
+            }
+        }
+    }
+    cout << DP[N - 1][N - 1] << endl;
+}
+\end{lstlisting}
+
+\subsection{Coin Combinations I}
+Considere um sistema monetário composto por \( n \) moedas. Cada moeda tem um valor inteiro positivo. Sua tarefa é calcular o número de maneiras distintas que você pode produzir uma soma de dinheiro \( x \) usando as moedas disponíveis.
+
+Por exemplo, se as moedas forem \(\{2,3,5\}\) e a soma desejada for \(9\), existem \(8\) maneiras:
+\begin{itemize}
+    \item \(2+2+5\)
+    \item \(2+5+2\)
+    \item \(5+2+2\)
+    \item \(3+3+3\)
+    \item \(2+2+2+3\)
+    \item \(2+2+3+2\)
+    \item \(2+3+2+2\)
+    \item \(3+2+2+2\)
+\end{itemize}
+
+\subsubsection*{Entrada}
+A primeira linha da entrada contém dois inteiros \( n \) e \( x \): o número de moedas e a soma desejada, respectivamente.  
+A segunda linha contém \( n \) inteiros distintos \( c_1, c_2, \dots, c_n \): o valor de cada moeda.
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número de maneiras de produzir a soma \( x \) utilizando as moedas disponíveis, calculado módulo \( 10^9+7 \).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 100
+\]
+\[
+1 \le x \le 10^6
+\]
+\[
+1 \le c_i \le 10^6,\quad \text{para } i = 1, 2, \dots, n.
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+3 9
+2 3 5
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+8
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+const int mod = 1000000007;
+
+void solve() {
+    int n, x;
+    cin >> n >> x;
+    vector<int> a(n);
+    for(auto &coin : a)
+        cin >> coin;
+    
+    vector<int> dp(x+1, 0);
+    dp[0] = 1;
+    
+    for (int j = 1; j <= x; j++) {
+        for (auto coin : a) {
+            if (j - coin >= 0) {
+                dp[j] += dp[j - coin];
+                dp[j] %= mod;
+            }
+        }
+    }
+    
+    cout << dp[x] << endl;
+}
+
+\end{lstlisting}
+
+\subsection{Coin Combinations II}
+Considere um sistema monetário composto por \( n \) moedas. Cada moeda tem um valor inteiro positivo. Sua tarefa é calcular o número de maneiras distintas \textbf{ordenadas} que você pode produzir uma soma de dinheiro \( x \) usando as moedas disponíveis.
+
+Por exemplo, se as moedas forem \(\{2,3,5\}\) e a soma desejada for \(9\), existem \(3\) maneiras:
+\begin{itemize}
+    \item \(2+2+5\)
+    \item \(3+3+3\)
+    \item \(2+2+2+3\)
+\end{itemize}
+
+\subsubsection*{Entrada}
+A primeira linha de entrada contém dois inteiros \( n \) e \( x \): o número de moedas e a soma desejada de dinheiro.\\  
+A segunda linha contém \( n \) inteiros distintos \( c_1, c_2, \dots, c_n \): o valor de cada moeda.
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número de maneiras módulo \( 10^9+7 \).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 100
+\]
+\[
+1 \le x \le 10^6
+\]
+\[
+1 \le c_i \le 10^6,\quad \text{para } i = 1, 2, \dots, n.
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+3 9
+2 3 5
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n, v; 
+    cin >> n >> v;
+    vi a(n);
+    for(auto &i : a) 
+        cin >> i;
+
+    vi dp(v+1, 0);
+    dp[0] = 1;
+    for(auto i : a){
+        for(int j = i; j <= v; j++){
+            dp[j] += dp[j - i];
+            dp[j] %= mod;
+        }
+    }
+
+    cout << dp[v] << endl;
+}
+\end{lstlisting}
+
+\subsection{Dice Combinations}
+Sua tarefa é contar o número de maneiras de construir a soma \( n \) jogando um dado uma ou mais vezes. Cada lançamento produz um resultado entre \( 1 \) e \( 6 \).
+
+Por exemplo, se \( n = 3 \), existem \( 4 \) maneiras:
+\begin{itemize}
+    \item \(1+1+1\)
+    \item \(1+2\)
+    \item \(2+1\)
+    \item \(3\)
+\end{itemize}
+
+\subsubsection*{Entrada}
+A única linha de entrada contém um número inteiro \( n \).
+
+\subsubsection*{Saída}
+Imprima o número de maneiras de construir a soma \( n \) módulo \( 10^9+7 \).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 10^6
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+4
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+signed main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    cout.tie(NULL);
+    
+    cin >> n;
+    DP.assign(n + 1, 0);
+    DP[0] = 1;
+    
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= 6; j++)
+        {
+            if (i - j >= 0)
+            {
+                DP[i] += DP[i - j];
+                DP[i] %= mod;
+            }
+        }
+    }
+    cout << DP[n] << endl;
+}
+\end{lstlisting}
+
+\subsection{Minimizing Coins}
+Considere um sistema monetário composto por \( n \) moedas. Cada moeda tem um valor inteiro positivo. Sua tarefa é produzir uma quantia de dinheiro \( x \) usando as moedas disponíveis de forma que o número de moedas utilizado seja mínimo.
+
+Por exemplo, se as moedas forem \(\{1,5,7\}\) e a quantia desejada for \(11\), uma solução ótima é \(5+5+1\), que utiliza \(3\) moedas.
+
+\subsubsection*{Entrada}
+A primeira linha de entrada contém dois inteiros \( n \) e \( x \): o número de moedas e a quantia desejada de dinheiro, respectivamente.\\  
+A segunda linha contém \( n \) inteiros distintos \( c_1, c_2, \dots, c_n \): o valor de cada moeda.
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número mínimo de moedas necessário para produzir a quantia \( x \). Se não for possível, imprima \(-1\).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 100
+\]
+\[
+1 \le x \le 10^6
+\]
+\[
+1 \le c_i \le 10^6,\quad \text{para } i = 1, 2, \dots, n.
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+3 11
+1 5 7
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+int main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+
+    int n, x;
+    cin >> n >> x;
+    vector<int> dp(x + 1, inf);
+    vector<int> moedas(n);
+
+    for (auto &i : moedas)
+        cin >> i;
+
+    dp[0] = 0;
+
+    for (int i = 1; i <= x; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (i - moedas[j] >= 0)
+            {
+                dp[i] = min(dp[i], dp[i - moedas[j]] + 1);
+            }
+        }
+    }
+    cout << (dp[x] == inf ? -1 : dp[x]) << endl;
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Removing Digits}
+Você recebe um número inteiro \( n \). Em cada passo, você pode subtrair um dos dígitos (diferente de zero) do número. Sua tarefa é determinar o número mínimo de passos necessários para reduzir \( n \) a \( 0 \).
+
+\subsubsection*{Entrada}
+A única linha de entrada contém um número inteiro \( n \).
+
+\subsubsection*{Saída}
+Imprima um número inteiro: o número mínimo de passos necessários para transformar \( n \) em \( 0 \).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 10^6
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+27
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+5
+\end{verbatim}
+
+\textbf{Explicação:} Uma solução ótima é: 
+\[
+27 \rightarrow 20 \rightarrow 18 \rightarrow 10 \rightarrow 9 \rightarrow 0
+\]
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+int main() {
+    int value;
+    cin >> value;
+    vector<int> dp(value + 1, INT_MAX);
+    dp[0] = 0; // Não são necessárias operações para alcançar 0.
+
+    for (int i = 1; i <= value; ++i) {
+        int aux = i;
+        while (aux > 0) {
+            int digit = aux % 10;
+            if (digit > 0) {
+                dp[i] = min(dp[i], dp[i - digit] + 1);
+            }
+            aux /= 10;
+        }
+    }
+
+    cout << dp[value] << endl;
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Book Shop}
+Você está em uma livraria que vende \( n \) livros diferentes. Para cada livro, você sabe o seu preço e o número de páginas. Você decidiu que o preço total de suas compras será no máximo \( x \). Qual é o número máximo de páginas que você pode comprar? Note que você pode comprar cada livro no máximo uma vez.
+
+\subsubsection*{Entrada}
+A primeira linha da entrada contém dois inteiros \( n \) e \( x \): o número de livros e o preço total máximo.\\  
+A próxima linha contém \( n \) inteiros \( h_1, h_2, \dots, h_n \): o preço de cada livro.\\  
+A última linha contém \( n \) inteiros \( s_1, s_2, \dots, s_n \): o número de páginas de cada livro.
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número máximo de páginas que você pode comprar.
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 1000
+\]
+\[
+1 \le x \le 10^5
+\]
+\[
+1 \le h_i, s_i \le 1000
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+4 10
+4 8 5 3
+5 12 8 1
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+13
+\end{verbatim}
+
+\textbf{Explicação:} Você pode comprar os livros 1 e 3. O preço total é \(4+5=9\) e o número total de páginas é \(5+8=13\).
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+int main(){
+    int n, x;
+    cin >> n >> x;
+    vector<int> a(n), b(n), dp(x+1, 0);
+    for(auto &i : a) 
+        cin >> i;
+    for(auto &i : b) 
+        cin >> i;
+    
+    // dp[j] guarda o máximo de páginas que podemos obter com um custo total j
+    for(int i = 0; i < n; i++){
+        for(int j = x; j >= a[i]; j--){
+            dp[j] = max(dp[j], dp[j - a[i]] + b[i]);
+        }
+    }
+    cout << dp[x] << endl;
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Edit Distance}
+Dada duas strings, a distância de edição é o número mínimo de operações necessárias para transformar uma string na outra. As operações permitidas são:
+\begin{itemize}
+    \item Adicionar um caractere à string;
+    \item Remover um caractere da string;
+    \item Substituir um caractere da string.
+\end{itemize}
+
+\subsubsection*{Entrada}
+A primeira linha de entrada contém uma string com \( n \) caracteres (de A-Z).\\
+A segunda linha de entrada contém uma string com \( m \) caracteres (de A-Z).
+
+\subsubsection*{Saída}
+Imprima um inteiro: a distância de edição entre as duas strings.
+
+\subsubsection*{Restrições}
+\[
+1 \le n, m \le 5000
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+LOVE
+MOVIE
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+2
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    string a, b;
+    cin >> a >> b;
+    int n = sz(a), m = sz(b);
+    vvi dp(n + 1, vi(m + 1, 0));
+
+    for (int i = 0; i <= n; i++) dp[i][0] = i;
+    for (int j = 0; j <= m; j++) dp[0][j] = j;
+
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= m; j++)
+        {
+            dp[i][j] = min({ dp[i - 1][j] + 1,
+                             dp[i][j - 1] + 1,
+                             dp[i - 1][j - 1] + (a[i - 1] != b[j - 1]) });
+        }
+    }
+    cout << dp[n][m] << endl;
+}
+\end{lstlisting}
+
+\subsection{Money Sums}
+Você tem \( n \) moedas com certos valores. Sua tarefa é encontrar todas as somas de dinheiro que você pode criar usando essas moedas.
+
+\subsubsection*{Entrada}
+A primeira linha de entrada contém um inteiro \( n \): o número de moedas.\\
+A segunda linha contém \( n \) inteiros \( x_1, x_2, \dots, x_n \): os valores das moedas.
+
+\subsubsection*{Saída}
+Primeiro, imprima um inteiro \( k \): o número de somas de dinheiro distintas (exceto 0). Após isso, imprima todas as somas possíveis em ordem crescente, separadas por um espaço.
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 100,\quad 1 \le x_i \le 1000
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+4
+4 2 5 2
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+9
+2 4 5 6 7 8 9 11 13
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n; 
+    cin >> n;
+    vi a(n);
+    for(auto &i : a) 
+        cin >> i;
+    set<int> ans = {0};
+    for(auto i : a){
+        set<int> st;
+        for(auto j : ans){
+            st.insert(j + i);
+        }
+        ans.insert(st.begin(), st.end());
+    }
+    cout << ans.size() - 1 << endl;
+    for(auto i : ans){
+        if(i == 0) continue;
+        cout << i << " ";
+    }
+    cout << endl;
+}
+\end{lstlisting}
+
+\subsection{Rectangle Cutting}
+Dado um retângulo de \( a \times b \), sua tarefa é cortá-lo em quadrados. Em cada movimento, você pode selecionar um retângulo e cortá-lo em dois retângulos de forma que todos os comprimentos dos lados permaneçam inteiros. Qual é o número mínimo de movimentos necessários?
+
+\subsubsection*{Entrada}
+A única linha de entrada contém dois inteiros \( a \) e \( b \): as dimensões do retângulo.
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número mínimo de movimentos.
+
+\subsubsection*{Restrições}
+\[
+1 \le a, b \le 500
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+3 5
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int a, b;
+    cin >> a >> b;
+    vvi dp(a + 1, vi(b + 1, INF));
+
+    rep(i, 1, a + 1)
+    {
+        rep(j, 1, b + 1)
+        {
+            if (i == j)
+            {
+                dp[i][j] = 0;
+                continue;
+            }
+            rep(k, 1, i)
+            {
+                dp[i][j] = min(dp[i][j], dp[k][j] + dp[i - k][j] + 1);
+            }
+            rep(k, 1, j)
+            {
+                dp[i][j] = min(dp[i][j], dp[i][k] + dp[i][j - k] + 1);
+            }
+        }
+    }
+    cout << dp[a][b] << endl;
+}
+\end{lstlisting}
+
+\subsection{Array Description}
+Dado que um array possui \( n \) inteiros entre \( 1 \) e \( m \), e a diferença absoluta entre dois valores adjacentes é no máximo \( 1 \), dada uma descrição do array onde alguns valores podem ser desconhecidos (representados por \( 0 \)), sua tarefa é contar o número de arrays que correspondem à descrição.
+
+\subsubsection*{Entrada}
+A primeira linha de entrada contém dois inteiros \( n \) e \( m \): o tamanho do array e o limite superior para cada valor.\\
+A próxima linha contém \( n \) inteiros \( x_1, x_2, \dots, x_n \): o conteúdo do array. O valor \( 0 \) denota um valor desconhecido.
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número de arrays que correspondem à descrição, módulo \( 10^9+7 \).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 10^5,\quad 1 \le m \le 100,\quad 0 \le x_i \le m
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+3 5
+2 0 2
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n, m;
+    cin >> n >> m;
+    vi a(n);
+    for (auto &i : a)
+        cin >> i;
+
+    vvi dp(n, vi(m + 1, 0));
+    if(a[0] == 0)
+        for (int i = 1; i <= m; i++)
+            dp[0][i] = 1;
+    else dp[0][a[0]] = 1;
+
+    for (int i = 1; i < n; i++)
+    {
+        if (a[i] == 0)
+        {
+            for (int j = 1; j <= m; j++)
+            {
+                dp[i][j] = dp[i - 1][j];
+                if (j > 1)
+                {
+                    dp[i][j] += dp[i - 1][j - 1];
+                    dp[i][j] %= mod;
+                }
+                if (j < m)
+                {
+                    dp[i][j] += dp[i - 1][j + 1];
+                    dp[i][j] %= mod;
+                }
+            }
+        }
+        else
+        {
+            dp[i][a[i]] = dp[i - 1][a[i]];
+            if (a[i] > 1)
+            {
+                dp[i][a[i]] += dp[i - 1][a[i] - 1];
+                dp[i][a[i]] %= mod;
+            }
+            if (a[i] < m)
+            {
+                dp[i][a[i]] += dp[i - 1][a[i] + 1];
+                dp[i][a[i]] %= mod;
+            }
+        }
+    }
+    int ans = 0;
+    for (int i = 1; i <= m; i++)
+    {
+        ans += dp[n-1][i];
+        ans %= mod;
+    }
+    cout << ans << endl;
+}
+\end{lstlisting}
+\subsection{Increasing Subsequence}
+Dado um array de \( n \) inteiros, sua tarefa é determinar o comprimento da subsequência crescente mais longa, ou seja, a subsequência de elementos que é estritamente crescente e possui o maior tamanho possível. Uma subsequência é uma sequência que pode ser derivada do array removendo alguns elementos sem alterar a ordem dos elementos restantes.
+
+\subsubsection*{Entrada}
+A primeira linha contém um inteiro \( n \): o tamanho do array.\\
+A segunda linha contém \( n \) inteiros \( x_1, x_2, \dots, x_n \): o conteúdo do array.
+
+\subsubsection*{Saída}
+Imprima o comprimento da subsequência crescente mais longa.
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 2\cdot 10^5,\quad 1 \le x_i \le 10^9
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+8
+7 3 5 3 6 2 9 8
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+4
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n; 
+    cin >> n;
+    vi v(n);
+    for(auto &i : v) 
+        cin >> i;
+    vi ans;
+    for(int i = 0; i < n; i++){
+        auto it = lower_bound(all(ans), v[i]);
+        if(it == ans.end()) 
+            ans.pb(v[i]);
+        else 
+            *it = v[i];
+    }
+    cout << ans.size() << endl;
+}
+\end{lstlisting}
+
+\subsection{Projects}
+Você tem \( n \) projetos aos quais pode comparecer. Para cada projeto, você sabe o dia de início \( a_i \), o dia de término \( b_i \) e a recompensa \( p_i \). Você só pode comparecer a um projeto por dia, ou seja, os projetos escolhidos não podem se sobrepor. Sua tarefa é determinar a quantidade máxima de dinheiro que você pode ganhar escolhendo um conjunto de projetos compatível.
+
+\subsubsection*{Entrada}
+A primeira linha de entrada contém um inteiro \( n \): o número de projetos.\\
+Em seguida, há \( n \) linhas, cada uma contendo três inteiros \( a_i \), \( b_i \) e \( p_i \), representando, respectivamente, o dia de início, o dia de término e a recompensa do projeto.
+
+\subsubsection*{Saída}
+Imprima um inteiro: a quantidade máxima de dinheiro que você pode ganhar.
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 2 \cdot 10^5,\quad 1 \le a_i \le b_i \le 10^9,\quad 1 \le p_i \le 10^9.
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+4
+2 4 4
+3 6 6
+6 8 2
+5 7 3
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+7
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+struct project {
+    int start, end, reward;
+};
+
+void solve()
+{
+    int n;
+    cin >> n;
+    vector<project> projects(n);
+    for (auto &i : projects)
+    {
+        cin >> i.start >> i.end >> i.reward;
+    }
+    sort(all(projects), [&](project a, project b)
+         { return a.end < b.end; });
+    vi dp(n, 0);
+    dp[0] = projects[0].reward;
+
+    for (int i = 1; i < n; i++)
+    {
+        int l = -1, r = i - 1;
+        while (l != r)
+        {
+            int m = (l + r + 1) / 2;
+            if (projects[m].end < projects[i].start)
+                l = m;
+            else
+                r = m - 1;
+        }
+        if (l != -1)
+            dp[i] = max(dp[i - 1], projects[i].reward + dp[l]);
+        else
+            dp[i] = max(dp[i - 1], projects[i].reward);
+    }
+    cout << dp[n - 1] << endl;
+}
+\end{lstlisting}
+\subsection{Counting Tilings}
+Sua tarefa é contar o número de maneiras de preencher uma grade de \( n \times m \) usando azulejos de \(1 \times 2\) e \(2 \times 1\).
+
+\subsubsection*{Entrada}
+A única linha de entrada contém dois inteiros \( n \) e \( m \).
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número de maneiras de preencher a grade, módulo \(10^9+7\).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 10,\quad 1 \le m \le 1000.
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+4 7
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+781
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n, m;
+    cin >> n >> m;
+    vvi dp(m+1, vi(1 << n, 0));
+    dp[0][0] = 1;
+    rep(i, 0, m) {
+        rep(mask, 0, 1 << n) {
+            auto fillColumn = [&](auto &fillColumn, int pos, int curr_mask, int next_mask) -> void {
+                if(pos == n) {
+                    dp[i+1][next_mask] = (dp[i+1][next_mask] + dp[i][mask]) % mod;
+                    return;
+                }
+                if(curr_mask & (1 << pos)) {
+                    fillColumn(fillColumn, pos+1, curr_mask, next_mask);
+                } else {
+                    // Tenta colocar um domino vertical (afeta apenas a coluna atual)
+                    if(pos+1 < n && !(curr_mask & (1 << (pos+1))))
+                        fillColumn(fillColumn, pos+2, curr_mask, next_mask);
+                    // Tenta colocar um domino horizontal (preenche a célula da próxima coluna)
+                    fillColumn(fillColumn, pos+1, curr_mask, next_mask | (1 << pos));
+                }
+            };
+            fillColumn(fillColumn, 0, mask, 0);
+        }
+    }
+    cout << dp[m][0] << endl;
+}
+\end{lstlisting}
+
+\subsection{Two Sets II}
+Dada a sequência dos números \(1,2,\ldots,n\), sua tarefa é contar o número de maneiras de dividi-la em dois conjuntos cuja soma seja igual.
+
+\subsubsection*{Entrada}
+A única linha de entrada contém um inteiro \(n\).
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número de maneiras de dividir os números de \(1\) a \(n\) em dois conjuntos de soma igual, módulo \(10^9+7\).
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 500
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+7
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+4
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n; 
+    cin >> n;
+    int sum = n * (n + 1) / 2;
+    if (sum & 1) {
+        cout << 0 << endl;
+        return;
+    }
+    int target = sum / 2;
+    vi dp(MAXN);
+    dp[0] = 1;
+    rep(i, 1, n+1){
+        for (int j = i*(i-1)/2; j >= 0; j--){
+            dp[j+i] = (dp[j+i] + dp[j]) % (2 * mod);
+        }
+    }
+    cout << dp[target] / 2 << endl;
+}
+\end{lstlisting}
+\subsection{Unique Paths}
+Há um robô em uma grade de tamanho \( m \times n \). O robô está inicialmente localizado no \textbf{canto superior esquerdo} (ou seja, em \texttt{grid[0][0]}). O robô tenta se mover para o \textbf{canto inferior direito} (ou seja, em \texttt{grid[m-1][n-1]}). Em cada movimento, ele pode apenas se mover para \textbf{baixo} ou para \textbf{direita}.
+
+Dado os dois inteiros \( m \) e \( n \), retorne o número de caminhos únicos possíveis que o robô pode seguir para alcançar o canto inferior direito. Os casos de teste são gerados de forma que a resposta seja menor ou igual a \(2 \times 10^9\).
+
+\subsubsection*{Entrada}
+A única linha de entrada contém dois inteiros \( m \) e \( n \).
+
+\subsubsection*{Saída}
+Imprima um inteiro: o número de caminhos únicos.
+
+\subsubsection*{Restrições}
+\[
+1 \le m, n \le 100
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Exemplo 1:}
+
+\textbf{Input:}
+\begin{verbatim}
+3 7
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+28
+\end{verbatim}
+
+\textbf{Exemplo 2:}
+
+\textbf{Input:}
+\begin{verbatim}
+3 2
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+int uniquePaths(int m, int n) {
+    vvi dp(m, vi(n, 0));
+    dp[0][0] = 1;
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i > 0)
+                dp[i][j] += dp[i-1][j];
+            if (j > 0)
+                dp[i][j] += dp[i][j-1];
+        }
+    }
+    return dp[m-1][n-1];
+}
+\end{lstlisting}
+\subsection{Maximal Square}
+Dada uma matriz binária \(m \times n\) preenchida com os caracteres \texttt{'0'} e \texttt{'1'}, sua tarefa é encontrar o maior quadrado que contenha apenas \texttt{'1'} e retornar sua área.
+
+\subsubsection*{Entrada}
+A entrada consiste em uma matriz binária, onde:
+\begin{itemize}
+    \item \(m = \texttt{matrix.length}\)
+    \item \(n = \texttt{matrix[i].length}\)
+\end{itemize}
+
+\subsubsection*{Saída}
+Imprima um inteiro: a área do maior quadrado formado apenas por \texttt{'1'}.
+
+\subsubsection*{Restrições}
+\[
+1 \le m, n \le 300.
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Input:}
+\begin{verbatim}
+[["1","0","1","0","0"],
+ ["1","0","1","1","1"],
+ ["1","1","1","1","1"],
+ ["1","0","0","1","0"]]
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+4
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+int maximalSquare(vector<vector<char>>& matrix) {
+    if (matrix.empty() || matrix[0].empty()) return 0;
+    int m = matrix.size(), n = matrix[0].size();
+    vector<vector<int>> dp(m, vector<int>(n, 0));
+    int maxSide = 0;
+
+    for (int i = 0; i < m; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (matrix[i][j] == '1') {
+                if (i == 0 || j == 0)
+                    dp[i][j] = 1;
+                else
+                    dp[i][j] = min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]}) + 1;
+                maxSide = max(maxSide, dp[i][j]);
+            }
+        }
+    }
+    return maxSide * maxSide;
+}
+\end{lstlisting}
+
+\subsection{Mínimas Inserções para Formar um Palíndromo}
+
+Dada uma string \( s \), em um único passo você pode inserir qualquer caractere em qualquer índice da string.
+
+Retorne o \textit{número mínimo de passos} necessários para transformar \( s \) em um palíndromo.
+
+\subsubsection*{Definição}
+Uma string palindrômica é aquela que pode ser lida da mesma forma tanto da esquerda para a direita quanto da direita para a esquerda.
+
+\subsubsection*{Entrada}
+A entrada consiste em uma única string \( s \) contendo apenas letras minúsculas do alfabeto inglês.
+
+\subsubsection*{Saída}
+Imprima um inteiro representando o número mínimo de inserções para tornar a string um palíndromo.
+
+\subsubsection*{Restrições}
+\[
+1 \leq \text{s.length} \leq 500
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Entrada:}
+\begin{verbatim}
+s = "zzazz"
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+0
+\end{verbatim}
+
+\textbf{Explicação:} A string \texttt{"zzazz"} já é um palíndromo, então não é necessário fazer nenhuma inserção.
+
+\bigskip
+\textbf{Entrada:}
+\begin{verbatim}
+s = "mbadm"
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+2
+\end{verbatim}
+
+\textbf{Explicação:} Podemos formar os palíndromos \texttt{"mbdadbm"} ou \texttt{"mdbabdm"} com duas inserções.
+
+\bigskip
+\textbf{Entrada:}
+\begin{verbatim}
+s = "leetcode"
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+5
+\end{verbatim}
+
+\textbf{Explicação:} Inserindo 5 caracteres, a string pode se tornar \texttt{"leetcodocteel"}.
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+int minInsertions(string s) {
+    int n = s.size();
+    vector<vector<int>> dp(n + 1, vector<int>(n + 1));
+
+    for (int i = 0; i <= n; i++)
+        dp[i][i] = 1;
+
+    for (int i = n - 2; i >= 0; i--) {
+        for (int j = i + 1; j < n; j++) {
+            if (s[i] == s[j]) {
+                dp[i][j] = dp[i + 1][j - 1] + 2;
+            } else {
+                dp[i][j] = max(dp[i + 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+    return n - dp[0][n - 1];
+}
+\end{lstlisting}
+
+\subsection{Subsequência Comum Mais Longa}
+
+Dadas duas strings \( \text{text1} \) e \( \text{text2} \), retorne o comprimento de sua \textbf{subsequência comum mais longa}. Se não houver subsequência comum, retorne \( 0 \).
+
+\subsubsection*{Definição}
+Uma \textbf{subsequência} de uma string é uma nova string gerada a partir da string original ao remover alguns caracteres (ou nenhum), sem alterar a ordem relativa dos caracteres restantes.
+
+Por exemplo, \texttt{"ace"} é uma subsequência de \texttt{"abcde"}.
+
+Uma \textbf{subsequência comum} de duas strings é uma subsequência que aparece em ambas.
+
+\subsubsection*{Entrada}
+A entrada consiste em duas strings \( \text{text1} \) e \( \text{text2} \), contendo apenas letras minúsculas do alfabeto inglês.
+
+\subsubsection*{Saída}
+Imprima um inteiro representando o comprimento da maior subsequência comum entre as duas strings.
+
+\subsubsection*{Restrições}
+\[
+1 \leq \text{text1.length}, \text{text2.length} \leq 1000
+\]
+
+\subsubsection*{Exemplo}
+
+\textbf{Entrada:}
+\begin{verbatim}
+text1 = "abcde", text2 = "ace"
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\textbf{Explicação:} A subsequência comum mais longa é \texttt{"ace"}, que possui comprimento 3.
+
+\bigskip
+\textbf{Entrada:}
+\begin{verbatim}
+text1 = "abc", text2 = "abc"
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+\textbf{Explicação:} A subsequência comum mais longa é \texttt{"abc"}, que possui comprimento 3.
+
+\bigskip
+\textbf{Entrada:}
+\begin{verbatim}
+text1 = "abc", text2 = "def"
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+0
+\end{verbatim}
+
+\textbf{Explicação:} Não há subsequência comum entre as strings, então o resultado é 0.
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+int longestCommonSubsequence(string text1, string text2) {
+    int m = text1.size();
+    int n = text2.size();
+    vector<vector<int>> dp(2, vector<int>(n + 1, 0)); // duas linhas apenas
+
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (text1[i - 1] == text2[j - 1]) {
+                dp[i % 2][j] = 1 + dp[(i - 1) % 2][j - 1];
+            } else {
+                dp[i % 2][j] = max(dp[(i - 1) % 2][j], dp[i % 2][j - 1]);
+            }
+        }
+    }
+
+    return dp[m % 2][n];
+}
+\end{lstlisting}
+

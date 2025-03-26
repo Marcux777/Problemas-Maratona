@@ -1,0 +1,108 @@
+\section{Busca Binaria}
+
+\subsection{Smooth Occlusion}
+
+\subsubsection*{Enunciado}
+Takahashi tem \(2N\) dentes: \(N\) dentes superiores e \(N\) dentes inferiores.
+O comprimento do \(i\)-ésimo dente superior da esquerda é \(U_i\) e o do \(i\)-ésimo dente inferior da esquerda é \(D_i\) (para \(1 \le i \le N\)).
+Os dentes estão considerados "bem ajustados" se ambas as seguintes condições forem satisfeitas:
+\begin{enumerate}
+    \item Existe um inteiro \(H\) tal que, para todo \(i\) com \(1 \le i \le N\),
+    \[
+    U_i + D_i = H.
+    \]
+    \item Para todo \(i\) com \(1 \le i < N\),
+    \[
+    \lvert U_i - U_{i+1} \rvert \le X.
+    \]
+\end{enumerate}
+
+Takahashi não pode aumentar os comprimentos dos dentes, apenas reduzi-los.
+Para isso, ele dispõe de uma máquina de moagem de dentes: a cada operação, pagando 1 iene, ele pode escolher exatamente um dente cujo comprimento seja positivo e reduzir seu comprimento em 1.
+Encontre o valor total mínimo que ele precisa pagar para que seus dentes se ajustem bem.
+
+\subsubsection*{Restrições}
+\begin{itemize}
+    \item \(2 \le N \le 2 \times 10^5\).
+    \item \(1 \le X \le 10^9\).
+    \item \(1 \le U_i, D_i \le 10^9\) para \(1 \le i \le N\).
+\end{itemize}
+
+\subsubsection*{Entrada}
+A entrada é fornecida a partir da entrada padrão no seguinte formato:
+\begin{verbatim}
+N X
+U_1 D_1
+U_2 D_2
+.
+.
+.
+U_N D_N
+\end{verbatim}
+
+\subsubsection*{Saída}
+Imprima uma única linha contendo o custo total mínimo que Takahashi precisa pagar.
+
+\subsubsection*{Exemplo}
+\textbf{Entrada:}
+\begin{verbatim}
+4 3
+3 1
+4 1
+5 9
+2 6
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+15
+\end{verbatim}
+
+Na entrada do exemplo, a soma total dos comprimentos dos dentes é
+\[
+(3+1)+(4+1)+(5+9)+(2+6)=4+5+14+8=31.
+\]
+Se for possível ajustar os dentes para que cada par some, por exemplo, \(H=4\), o custo será
+\[
+31 - 4\times4 = 31-16 = 15.
+\]
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n, x; 
+    cin >> n >> x;
+    vector<int> up(n), dw(n);
+    int total = 0;
+    int hmax = LINF;
+    for (int i = 0; i < n; i++){
+        cin >> up[i] >> dw[i];
+        total += up[i] + dw[i];
+        hmax = min(hmax, up[i] + dw[i]);
+    }
+
+    auto f = [&](int h) -> bool {
+        int l = max(0LL, h - (long long)dw[0]);
+        int r = min(h, up[0]);
+        for (int i = 1; i < n; i++){
+            int nl = max(0LL, h - (long long)dw[i]);
+            int nr = min(h, up[i]);
+            if (max(nl, l - x) > min(nr, r + x))
+                return false;
+            l = max(nl, l - x);
+            r = min(nr, r + x);
+        }
+        return true;
+    };
+
+    int lo = 0, hi = hmax;
+    while(lo <= hi){
+        int mid = (lo + hi) / 2;
+        if(f(mid))
+            lo = mid + 1;
+        else
+            hi = mid - 1;
+    }
+    cout << total - n * (lo - 1) << endl;
+}
+\end{lstlisting}

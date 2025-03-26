@@ -1,0 +1,101 @@
+\section{Ordered Set}
+\subsection{List Removals}
+
+\subsubsection*{Enunciado}
+Você recebe uma lista composta por \( n \) inteiros. Sua tarefa é remover elementos da lista em posições dadas e relatar os elementos removidos.
+
+\subsubsection*{Entrada}
+A primeira linha de entrada contém um inteiro \( n \): o tamanho inicial da lista. Durante o processo, os elementos são numerados \( 1, 2, \dots, k \), onde \( k \) é o tamanho atual da lista.
+
+A segunda linha contém \( n \) inteiros \( x_1, x_2, \dots, x_n \): o conteúdo da lista.
+
+A última linha contém \( n \) inteiros \( p_1, p_2, \dots, p_n \): as posições dos elementos a serem removidos.
+
+\subsubsection*{Saída}
+Imprima os elementos na ordem em que foram removidos.
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 2 \cdot 10^5
+\]
+\[
+1 \le x_i \le 10^9
+\]
+\[
+1 \le p_i \le n - i + 1
+\]
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n; cin >> n;
+    vi a(n);
+    ordered_set<int> s;
+    rep(i, 0, n){
+        cin >> a[i];
+        s.insert(i);
+    }
+    rep(i, 0, n){
+        int p; cin >> p;
+        int pos = *s.find_by_order(p-1);
+        cout << a[pos] << " ";
+        s.erase(pos);
+    }
+}
+\end{lstlisting}
+
+
+\subsection{Poblema 2}
+
+\subsubsection*{Enunciado}
+Você recebe um array de \( n \) inteiros. Sua tarefa é calcular a mediana de cada janela de \( k \) elementos, da esquerda para a direita.
+
+A mediana é o elemento do meio quando os elementos estão ordenados. Se o número de elementos for par, existem duas medianas possíveis e assumimos que a mediana é a menor delas.
+
+\subsubsection*{Entrada}
+A primeira linha contém dois inteiros \( n \) e \( k \): o número de elementos e o tamanho da janela.
+
+Em seguida, há \( n \) inteiros \( x_1, x_2, \dots, x_n \): o conteúdo do array.
+
+\subsubsection*{Saída}
+Imprima \( n-k+1 \) valores: as medianas.
+
+\subsubsection*{Restrições}
+\[
+1 \le k \le n \le 2 \cdot 10^5
+\]
+\[
+1 \le x_i \le 10^9, \quad \text{para } i = 1, 2, \dots, n.
+\]
+
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n, k; cin >> n >> k;
+    vi a(n);
+    ordered_set<pii> s;
+    rep(i, 0, n){
+        cin >> a[i];
+        if(i < k) // Insere apenas os primeiros k elementos.
+            s.insert({a[i], i});
+    }
+    // a mediana será o elemento 
+    // na posição (k-1)/2 (0-indexed)
+    auto med = s.find_by_order((k-1)/2);
+    cout << med->f << ' ';
+    rep(i, k, n){
+        // Insere o novo elemento com seu índice.
+        s.insert({a[i], i});
+        // Remove o elemento que saiu da janela.
+        s.erase(s.find({a[i-k], i-k}));
+        // Busca a mediana da janela atual.
+        med = s.find_by_order((k-1)/2);
+        cout << med->f << ' ';
+    }
+    cout << endl;
+}
+    
+\end{lstlisting}

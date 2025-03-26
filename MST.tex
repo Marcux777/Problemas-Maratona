@@ -1,0 +1,197 @@
+\section{Minimum Spanning Tree}
+
+\subsection{Transportation system.}
+
+\subsubsection*{Enunciado}
+No país de Graphland, existem muitas cidades, mas não há estradas. O governo federal deseja mudar essa situação e planeja construir estradas e ferrovias de forma que todas as cidades do país fiquem conectadas por meio deste novo sistema de transporte. Para tornar o sistema mais eficiente, Graphland construirá apenas estradas entre cidades do mesmo estado e utilizará ferrovias para conectar cidades que estejam em estados diferentes. Para os fins deste problema, considere que se a distância entre quaisquer duas cidades for, no máximo, \(r\), então elas pertencem ao mesmo estado.
+
+Além disso, para minimizar os custos de construção, o governo pretende erguer apenas a extensão mínima necessária de estradas e ferrovias, de modo que exista um caminho entre qualquer par de cidades em todo o país. Você foi contratado para determinar qual é a rede de transporte ótima que Graphland deve construir.
+
+\subsubsection*{Entrada}
+A primeira linha da entrada contém um inteiro \(T\) \((1 \le T \le 20)\), o número de casos de teste.  
+Para cada caso de teste:
+\begin{itemize}
+    \item A primeira linha contém dois inteiros, \(n\) \((1 \le n \le 1000)\) – o número de cidades que compõem Graphland, e \(r\) \((0 \le r \le 40000)\) – o valor limite para determinar se duas cidades estão no mesmo estado.
+    \item As \(n\) linhas seguintes contêm duas coordenadas inteiras \(x\) e \(y\) \(( -10000 \le x, y \le 10000 )\), representando o plano cartesiano de cada cidade em Graphland.
+\end{itemize}
+
+\subsubsection*{Saída}
+Para cada caso de teste, o programa deve imprimir uma única linha contendo:
+\begin{itemize}
+    \item O identificador do caso, no formato \texttt{Case \#i:} (onde \(i\) começa em 1 e incrementa para cada novo caso),
+    \item O número de estados em Graphland,
+    \item A extensão mínima (arredondada para o inteiro mais próximo) de estradas que devem ser construídas,
+    \item A extensão mínima (arredondada para o inteiro mais próximo) de ferrovias que devem ser construídas.
+\end{itemize}
+
+\subsubsection*{Observação}
+Note que, pela definição, se \(A\) e \(B\) estão no mesmo estado, e \(B\) e \(C\) estão no mesmo estado, então \(A\) e \(C\) também estão no mesmo estado.
+
+\subsubsection*{Exemplo de Entrada}
+\begin{verbatim}
+3
+3 100
+0 0
+1 0
+2 0
+3 1
+0 0
+100 0
+200 0
+4 20
+0 0
+40 30
+30 30
+10 10
+\end{verbatim}
+
+\subsubsection*{Exemplo de Saída}
+\begin{verbatim}
+Case #1: 1 2 0
+Case #2: 3 0 200
+Case #3: 2 24 28
+\end{verbatim}
+
+
+\begin{lstlisting}
+class DSU
+{
+    int *parent;
+    int *rank;
+
+public:
+    DSU(int n)
+    {
+        parent = new int[n];
+        rank = new int[n];
+
+        for (int i = 0; i < n; i++)
+        {
+            parent[i] = -1;
+            rank[i] = 1;
+        }
+    }
+
+    int find(int i)
+    {
+        if (parent[i] == -1)
+            return i;
+
+        return parent[i] = find(parent[i]);
+    }
+
+    void unite(int x, int y)
+    {
+        int s1 = find(x);
+        int s2 = find(y);
+
+        if (s1 != s2)
+        {
+            if (rank[s1] < rank[s2])
+            {
+                parent[s1] = s2;
+            }
+            else if (rank[s1] > rank[s2])
+            {
+                parent[s2] = s1;
+            }
+            else
+            {
+                parent[s2] = s1;
+                rank[s1] += 1;
+            }
+        }
+    }
+};
+
+class Graph
+{
+    vector<vector<int>> edgelist;
+    int V;
+    int r;
+
+public:
+    Graph(int V, int r)
+    {
+        this->V = V;
+        this->r = r;
+    }
+    void addEdge(int x, int y, int w)
+    {
+        edgelist.push_back({w, x, y});
+    }
+
+    vector<double> kruskals_mst()
+    {
+        sort(edgelist.begin(), edgelist.end());
+
+        DSU s(V);
+        double rail = 0;
+        double road = 0;
+        double estado = 1;
+        for (auto edge : edgelist)
+        {
+            int w = edge[0];
+            int x = edge[1];
+            int y = edge[2];
+
+            if (s.find(x) != s.find(y))
+            {
+                s.unite(x, y);
+                if (w > r * r)
+                {
+                    rail += sqrt(w);
+                    estado++;
+                }
+                else
+                {
+                    road += sqrt(w);
+                }
+            }
+        }
+        return {road, rail, estado};
+    }
+};
+
+int dist(pair<int, int> a, pair<int, int> b)
+{
+    return ((a.first - b.first) * (a.first - b.first) + (a.second - b.second) * (a.second - b.second));
+}
+
+signed main()
+{
+    ios_base::sync_with_stdio(true);
+    cin.tie(0);
+    cout.tie(0);
+    // freopen("saida.txt", "w", stdout);
+    int t, caso = 0;
+    cin >> t;
+    while (t--)
+    {
+        int n, r;
+        cin >> n >> r;
+        vector<pair<int, int>> cidades(n);
+        for (int i = 0; i < n; i++)
+        {
+            int x, y;
+            cin >> x >> y;
+            cidades[i] = {x, y};
+        }
+        Graph graph(n, r);
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+
+                int w = dist(cidades[i], cidades[j]);
+                graph.addEdge(i, j, w);
+            }
+        }
+        cout << fixed << setprecision(0);
+        cout << "Case #" << ++caso << ": ";
+        vector<double> c = graph.kruskals_mst();
+        cout << c[2] << " ";
+        cout << c[0] << " " << c[1] << endl;
+    }
+}
+\end{lstlisting}

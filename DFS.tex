@@ -1,0 +1,522 @@
+\section{DFS}
+\subsection{Protect Sheep}
+Bob é um fazendeiro. Ele tem um grande pasto com muitas ovelhas. Recentemente, ele perdeu algumas delas devido a ataques de lobos. Ele decidiu então colocar alguns cães pastores de forma que todas as suas ovelhas estejam protegidas.
+
+O pasto é um retângulo composto por \( R \times C \) células. Cada célula está vazia, contém uma ovelha, um lobo ou um cão. Ovelhas e cães sempre permanecem no lugar, mas os lobos podem vagar livremente pelo pasto, movendo-se repetidamente para a esquerda, direita, para cima ou para baixo para uma célula vizinha. Quando um lobo entra em uma célula com uma ovelha, ele a consome. No entanto, nenhum lobo pode entrar em uma célula com um cão.
+
+Inicialmente não há cães. Coloque cães no pasto de forma que nenhum lobo possa alcançar qualquer ovelha, ou determine que isso é impossível. Note que, como você tem muitos cães, não é necessário minimizar o número deles.
+
+\subsubsection*{Entrada}
+A primeira linha contém dois inteiros \( R \) (\(1 \le R \le 500\)) e \( C \) (\(1 \le C \le 500\)), indicando o número de linhas e o número de colunas, respectivamente.
+
+Cada uma das \( R \) linhas seguintes é uma string composta por exatamente \( C \) caracteres, representando uma linha do pasto. Aqui:
+\begin{itemize}
+    \item \texttt{S} significa uma ovelha,
+    \item \texttt{W} significa um lobo,
+    \item \texttt{.} significa uma célula vazia.
+\end{itemize}
+
+\subsubsection*{Saída}
+Se for impossível proteger todas as ovelhas, imprima uma única linha com a palavra \texttt{Não}.
+
+Caso contrário, imprima uma linha com a palavra \texttt{Sim}. Em seguida, imprima \( R \) linhas, representando o pasto após a colocação dos cães. Novamente:
+\begin{itemize}
+    \item \texttt{S} significa uma ovelha,
+    \item \texttt{W} significa um lobo,
+    \item \texttt{D} significa um cão,
+    \item \texttt{.} significa uma célula vazia.
+\end{itemize}
+
+Não é permitido mover, remover ou adicionar uma ovelha ou um lobo. Se houver várias soluções, você pode imprimir qualquer uma delas. Você não precisa minimizar o número de cães.
+
+\subsubsection*{Exemplo 1}
+
+\textbf{Input:}
+\begin{verbatim}
+6 6
+..S...
+..S.W.
+.S....
+..W...
+...W..
+......
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+Yes
+..SD..
+..SDW.
+.SD...
+.DW...
+DD.W..
+......
+\end{verbatim}
+
+\subsubsection*{Exemplo 2}
+
+\textbf{Input:}
+\begin{verbatim}
+1 2
+SW
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+No
+\end{verbatim}
+
+\subsubsection*{Exemplo 3}
+
+\textbf{Input:}
+\begin{verbatim}
+5 5
+.S...
+...S.
+S....
+...S.
+.S...
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+Yes
+.S...
+...S.
+S.D..
+...S.
+.S...
+\end{verbatim}
+
+\subsubsection*{Observação}
+No primeiro exemplo, podemos dividir o pasto em duas metades, uma contendo lobos e outra contendo ovelhas. Observe que a ovelha em (2,1) está segura, pois os lobos não podem se mover diagonalmente.
+
+No segundo exemplo, não há espaços vazios para colocar cães que protegeriam a única ovelha.
+
+No terceiro exemplo, não há lobos, então a tarefa é muito fácil. Colocamos um cão no centro para observar a tranquilidade do prado, mas a solução estaria correta mesmo sem ele.
+
+\subsubsection*{Solução}
+
+\begin{lstlisting}[language=C++]
+
+// Declaração global para a matriz de visitados
+vector<vector<bool>> vis;
+bool aux;
+
+void floodfillS(vector<string> &g, int x, int y)
+{
+    if (x < 0 || x >= g.size() || y < 0 || y >= g[0].size())
+        return;
+    if (vis[x][y])
+        return;
+    vis[x][y] = true;
+
+    if (g[x][y] == 'S')
+    {
+        if (x > 0 && g[x - 1][y] == '.')
+            g[x - 1][y] = 'D';
+        if (x < g.size() - 1 && g[x + 1][y] == '.')
+            g[x + 1][y] = 'D';
+        if (y > 0 && g[x][y - 1] == '.')
+            g[x][y - 1] = 'D';
+        if (y < g[0].size() - 1 && g[x][y + 1] == '.')
+            g[x][y + 1] = 'D';
+    }
+
+    floodfillS(g, x - 1, y);
+    floodfillS(g, x + 1, y);
+    floodfillS(g, x, y - 1);
+    floodfillS(g, x, y + 1);
+}
+
+void floodfillW(vector<string> &g, int x, int y)
+{
+    if (x < 0 || x >= g.size() || y < 0 || y >= g[0].size())
+        return;
+    if (vis[x][y] || g[x][y] == 'D')
+        return;
+    vis[x][y] = true;
+
+    if (g[x][y] == 'S')
+        aux = true;
+
+    floodfillW(g, x - 1, y);
+    floodfillW(g, x + 1, y);
+    floodfillW(g, x, y - 1);
+    floodfillW(g, x, y + 1);
+}
+
+int main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+    
+    int r, c;
+    cin >> r >> c;
+    vector<string> g(r);
+    vis.assign(r, vector<bool>(c, false));
+
+    for (auto &i : g)
+        cin >> i;
+
+    // Coloca cães ao redor de cada ovelha
+    for (int i = 0; i < r; i++)
+    {
+        for (int j = 0; j < c; j++)
+        {
+            if (g[i][j] == 'S')
+            {
+                floodfillS(g, i, j);
+            }
+        }
+    }
+    
+    vis.assign(r, vector<bool>(c, false));
+    aux = false;
+    
+    // Verifica se algum lobo pode alcançar uma ovelha
+    for (int i = 0; i < r; i++)
+    {
+        for (int j = 0; j < c; j++)
+        {
+            if (g[i][j] == 'W')
+            {
+                floodfillW(g, i, j);
+            }
+        }
+    }
+    
+    cout << (aux ? "No\n" : "Yes\n");
+    if (!aux)
+    {
+        for (auto s : g)
+        {
+            cout << s << "\n";
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Badge}
+
+\subsubsection*{Enunciado}
+No Verão da Escola de Informática, se um aluno não se comporta bem, os professores fazem um buraco em sua insígnia. E hoje um dos professores pegou um grupo de \( n \) alunos fazendo mais uma travessura. 
+
+Vamos supor que todos esses alunos são numerados de \( 1 \) a \( n \). O professor chegou ao aluno \( a \) e fez um buraco em sua insígnia. No entanto, o aluno afirmou que o verdadeiro culpado é outro aluno, o \( p_a \). Depois disso, o professor chegou ao aluno \( p_a \) e fez um buraco em sua insígnia também. O aluno respondeu que o verdadeiro culpado era o aluno \( p_{p_a} \). 
+
+Esse processo continuou por um tempo, mas, como o número de alunos era finito, eventualmente o professor chegou ao aluno que já tinha um buraco em sua insígnia. Em seguida, o professor fez um segundo buraco na insígnia desse aluno e decidiu que havia terminado com o processo, indo para a sauna.
+
+Você não sabe qual foi o primeiro aluno pego pelo professor. Contudo, você conhece todos os números \( p_1, p_2, \dots, p_n \) (\( 1 \le p_i \le n \)), onde \( p_i \) indica o aluno denunciado ao professor pelo aluno \( i \).
+
+Sua tarefa é descobrir, para cada aluno \( a \), quem seria o aluno com dois buracos na insígnia, se o primeiro aluno pego fosse o \( a \).
+
+\subsubsection*{Input}
+A primeira linha da entrada contém o único inteiro \( n \) (\( 1 \le n \le 1000 \)) --- o número de alunos travessos.
+
+A segunda linha contém \( n \) inteiros \( p_1, p_2, \dots, p_n \) (\( 1 \le p_i \le n \)), onde \( p_i \) indica o aluno denunciado pelo aluno \( i \).
+
+\subsubsection*{Output}
+Para cada aluno \( a \) de \( 1 \) a \( n \), imprima qual aluno receberia dois buracos na insígnia, se o primeiro aluno pego fosse o \( a \).
+
+\subsubsection*{Sample 1}
+
+\textbf{Input:}
+\begin{verbatim}
+3
+2 3 2
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+2 2 3
+\end{verbatim}
+
+\subsubsection*{Sample 2}
+
+\textbf{Input:}
+\begin{verbatim}
+3
+1 2 3
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+1 2 3
+\end{verbatim}
+
+\subsubsection*{Note}
+A imagem corresponde ao primeiro exemplo do caso de teste.
+
+\medskip
+\textbf{Quando \( a = 1 \):} O professor vai aos alunos \( 1 \), \( 1 \) e \( 2 \), nessa ordem, e o aluno \( 2 \) é quem recebe um segundo buraco em sua insígnia.
+
+\medskip
+\textbf{Quando \( a = 2 \):} O professor vai aos alunos \( 2 \), \( 3 \) e \( 2 \), e o aluno \( 2 \) recebe um segundo buraco em sua insígnia.
+
+\medskip
+\textbf{Quando \( a = 3 \):} O professor visitará os alunos \( 3 \), \( 2 \) e \( 3 \), com o aluno \( 3 \) recebendo um segundo buraco em sua insígnia.
+
+\medskip
+No segundo caso de teste, não importa com quem o professor comece; esse aluno seria sempre o que receberia o segundo buraco em sua insígnia.
+
+\subsubsection*{Solução}
+
+\begin{lstlisting}[language=C++]
+vector<bool> vis;
+queue<int> q;
+
+void dfs(int u, vector<vector<int>> &g)
+{
+    vis[u] = true;
+    for (auto v : g[u])
+    {
+        if (!vis[v])
+            dfs(v, g);
+        else
+        {
+            q.push(v);
+            break;
+        }
+    }
+}
+
+int main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+    
+    int n, x;
+    cin >> n;
+    vector<vector<int>> graph(n + 1);
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> x;
+        graph[i].push_back(x);
+    }
+
+    for (int i = 1; i <= n; i++)
+    {
+        vis.assign(n + 1, false);
+        dfs(i, graph);
+    }
+    while (!q.empty())
+    {
+        cout << q.front() << " ";
+        q.pop();
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Building Roads}
+
+Byteland tem \( n \) cidades e \( m \) estradas entre elas. O objetivo é construir novas estradas para que haja uma rota entre quaisquer duas cidades.
+
+Sua tarefa é descobrir o número mínimo de estradas necessárias e também determinar quais estradas devem ser construídas.
+
+\subsubsection*{Entrada}
+A primeira linha da entrada contém dois inteiros \( n \) e \( m \): o número de cidades e o número de estradas, respectivamente. As cidades são numeradas de \( 1, 2, \dots, n \).
+
+Depois, há \( m \) linhas descrevendo as estradas. Cada linha contém dois inteiros \( a \) e \( b \), indicando que há uma estrada entre as cidades \( a \) e \( b \).
+
+Uma estrada sempre conecta duas cidades diferentes, e há no máximo uma estrada entre quaisquer duas cidades.
+
+\subsubsection*{Saída}
+Primeiro, imprima um inteiro \( k \): o número de estradas necessárias para conectar todas as cidades.
+
+Em seguida, imprima \( k \) linhas que descrevem as novas estradas a serem construídas. Você pode imprimir qualquer solução válida.
+
+\subsubsection*{Restrições}
+\[
+1 \le n \le 10^5
+\]
+\[
+1 \le m \le 2 \cdot 10^5
+\]
+\[
+1 \le a,b \le n
+\]
+
+\subsubsection*{Exemplo}
+\textbf{Input:}
+\begin{verbatim}
+4 2
+1 2
+3 4
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+1
+2 3
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void dfs(int u, vector<vector<int>> &graph, vector<bool> &vis)
+{
+    vis[u] = true;
+    for (int v : graph[u])
+    {
+        if (!vis[v])
+        {
+            dfs(v, graph, vis);
+        }
+    }
+    u;
+}
+ 
+int main()
+{
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    int n, m;
+    cin >> n >> m;
+    vector<vector<int>> graph(n + 1);
+    vector<bool> vis(n + 1, false);
+    vector<int> roads;
+    for (int i = 0; i < m; i++)
+    {
+        int x, y;
+        cin >> x >> y;
+        graph[x].push_back(y);
+        graph[y].push_back(x);
+    }
+    for (int i = 1; i <= n; i++)
+    {
+        if (!vis[i])
+        {
+            roads.push_back(i);
+            dfs(i, graph, vis);
+        }
+    }
+    cout << roads.size() - 1 << endl;
+    for (int i = 0; i < roads.size() - 1; i++)
+    {
+        cout << roads[i] << " " << roads[i + 1] << endl;
+    }
+}    
+\end{lstlisting}
+
+\subsection{Minimum XOR Path}
+
+\subsubsection*{Enunciado}
+Você recebe um grafo não direcionado, simples e conectado com \(N\) vértices numerados de \(1\) a \(N\) e \(M\) arestas numeradas de \(1\) a \(M\). A aresta \(i\) conecta os vértices \(u_i\) e \(v_i\) e possui um rótulo \(w_i\). Entre todos os caminhos simples (caminhos que não passam pelo mesmo vértice mais de uma vez) do vértice \(1\) ao vértice \(N\), encontre o mínimo XOR dos rótulos das arestas presentes no caminho.
+
+\paragraph{Notas sobre XOR:}
+Para inteiros não negativos \(A\) e \(B\), o XOR, denotado por \(A \oplus B\), é definido da seguinte forma: na representação binária de \(A\) e \(B\), o dígito na posição correspondente a \(2^k\) (para \(k \ge 0\)) do resultado é \(1\) se, e somente se, exatamente um dos dígitos na mesma posição de \(A\) e \(B\) for \(1\); caso contrário, o dígito é \(0\). Por exemplo, \(3 \oplus 5 = 6\) (em binário: \(011 \oplus 101 = 110\)).
+
+\subsubsection*{Restrições}
+\begin{itemize}
+    \item \(2 \leq N \leq 10\).
+    \item \(N-1 \leq M \leq \frac{N(N-1)}{2}\).
+    \item \(1 \leq u_i < v_i \leq N\).
+    \item \(0 \leq w_i < 2^{60}\).
+    \item O grafo é não direcionado, simples e conectado.
+    \item Todos os valores de entrada são inteiros.
+\end{itemize}
+
+\subsubsection*{Entrada}
+A entrada é fornecida a partir da entrada padrão no seguinte formato:
+\begin{verbatim}
+N M
+u_1 v_1 w_1
+u_2 v_2 w_2
+.
+.
+.
+u_M v_M w_M
+\end{verbatim}
+
+\subsubsection*{Saída}
+Imprima a resposta: o mínimo XOR dos rótulos das arestas dentre todos os caminhos simples do vértice \(1\) ao vértice \(N\).
+
+\subsubsection*{Exemplo 1}
+\textbf{Entrada:}
+\begin{verbatim}
+4 4
+1 2 3
+2 4 5
+1 3 4
+3 4 7
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+3
+\end{verbatim}
+
+Existem dois caminhos simples do vértice \(1\) ao vértice \(4\):
+\begin{itemize}
+    \item \(1 \to 2 \to 4\) com XOR dos rótulos: \(3 \oplus 5 = 6\).
+    \item \(1 \to 3 \to 4\) com XOR dos rótulos: \(4 \oplus 7 = 3\).
+\end{itemize}
+Portanto, a resposta é \(3\).
+
+\subsubsection*{Exemplo 2}
+\textbf{Entrada:}
+\begin{verbatim}
+4 3
+1 2 1
+2 3 2
+3 4 4
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+7
+\end{verbatim}
+
+\subsubsection*{Exemplo 3}
+\textbf{Entrada:}
+\begin{verbatim}
+7 10
+1 2 726259430069220777
+1 4 988687862609183408
+1 5 298079271598409137
+1 6 920499328385871537
+1 7 763940148194103497
+2 4 382710956291350101
+3 4 770341659133285654
+3 5 422036395078103425
+3 6 472678770470637382
+5 7 938201660808593198
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+186751192333709144
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n, m; 
+    cin >> n >> m;
+    vector<vector<pair<int, long long>>> graph(n+1);
+    for (int i = 0; i < m; i++){
+        int x, y; 
+        long long w; 
+        cin >> x >> y >> w;
+        graph[x].push_back({y, w});
+        graph[y].push_back({x, w});
+    }
+    vector<int> vis(n+1, 0);
+    long long ans = LLONG_MAX;
+    function<void(int, long long)> dfs = [&](int u, long long curr) {
+        vis[u] = 1;
+        if(u == n)
+            ans = min(ans, curr);
+        for(auto [v, w] : graph[u]){
+            if(!vis[v])
+                dfs(v, curr ^ w);
+        }
+        vis[u] = 0;
+    };
+    dfs(1, 0);
+    cout << ans << endl;
+}
+\end{lstlisting}
+

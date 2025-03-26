@@ -1,0 +1,274 @@
+\section{Fenwick}
+\subsection{Rotated Inversions}
+
+\subsubsection*{Enunciado}
+Você recebe inteiros \(N, M\) e uma sequência de inteiros não negativos de comprimento \(N\):
+\[
+A = (A_1, A_2, \ldots, A_N).
+\]
+Para cada inteiro \(k\) com \(0 \le k \le M-1\), defina a sequência
+\[
+B = (B_1, B_2, \ldots, B_N),
+\]
+onde
+\[
+B_i = (A_i + k) \bmod M.
+\]
+Sua tarefa é calcular o número de inversões na sequência \(B\). O número de inversões de uma sequência é o número de pares \((i,j)\) tais que
+\[
+1 \le i < j \le N \quad \text{e} \quad B_i > B_j.
+\]
+
+\subsubsection*{Restrições}
+\begin{itemize}
+    \item \(1 \le N, M \le 2 \times 10^5\).
+    \item \(0 \le A_i < M\) para \(1 \le i \le N\).
+    \item Todos os valores de entrada são inteiros.
+\end{itemize}
+
+\subsubsection*{Entrada}
+A entrada é fornecida a partir da entrada padrão no seguinte formato:
+\begin{verbatim}
+N M
+A_1 A_2 \dots A_N
+\end{verbatim}
+
+\subsubsection*{Saída}
+Imprima \(M\) linhas. A \(i\)-ésima linha (para \(1 \le i \le M\)) deve conter a resposta para o caso \(k = i-1\); isto é, o número de inversões na sequência \(B\) formada com \(k = i-1\).
+
+\subsubsection*{Exemplo 1}
+\textbf{Entrada:}
+\begin{verbatim}
+3 3
+2 1 0
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+3
+1
+1
+\end{verbatim}
+
+\subsubsection*{Exemplo 2}
+\textbf{Entrada:}
+\begin{verbatim}
+5 6
+5 3 5 0 1
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+7
+3
+3
+1
+1
+5
+\end{verbatim}
+
+\subsubsection*{Exemplo 3}
+\textbf{Entrada:}
+\begin{verbatim}
+7 7
+0 1 2 3 4 5 6
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+0
+6
+10
+12
+12
+10
+6
+\end{verbatim}
+
+\subsubsection*{Solução}
+A seguir, uma possível solução em C++ que utiliza uma Árvore de Fenwick (BIT) para contar inversões e aproveita o fato de que as inversões podem ser atualizadas de forma incremental ao rotacionar a sequência.
+
+\begin{lstlisting}[language=C++]
+class FenwickTree {
+    private:
+        int n;
+        vector<int> tree;
+    public:
+        // Cria uma BIT com n posições (0-indexado publicamente)
+        FenwickTree(int n) : n(n), tree(n+1, 0) {}
+
+        // Adiciona 'x' na posição p (0-indexada)
+        void add(int p, int x) {
+            for(++p; p <= n; p += p & -p)
+                tree[p] += x;
+        }
+
+        // Soma prefixo [0, p)
+        int sum(int p) const {
+            int res = 0;
+            for(; p; p -= p & -p)
+                res += tree[p];
+            return res;
+        }
+
+        // Soma no intervalo [l, r)
+        int range_sum(int l, int r) const {
+            return sum(r) - sum(l);
+        }
+};
+
+void solve()
+{
+    int n, m;
+    cin >> n >> m;
+    // Para cada valor de A, armazena os índices onde ele ocorre.
+    vector<vector<int>> g(m);
+    vector<int> a(n);
+    for (int i = 0; i < n; i++){
+        cin >> a[i];
+        g[a[i]].push_back(i);
+    }
+    
+    int ans = 0;
+    FenwickTree fenw(m);
+    // Contagem de inversões na sequencia A (caso k = 0)
+    for (auto x : a) {
+        ans += fenw.range_sum(x + 1, m);
+        fenw.add(x, 1);
+    }
+    cout << ans << endl;
+    
+    // Para cada rotação k de 1 a m-1, atualize o número de inversões
+    for (int c = 1; c < m; c++){
+        int c1 = 0, c2 = 0;
+        // 'g[m-c]' armazena os índices dos elementos iguais a m-c
+        auto &grupo = g[m - c];
+        for (int i = 0; i < (int)grupo.size(); i++){
+            c1 += grupo[i] - i;
+            c2 += (n - 1 - grupo[i]) - ((int)grupo.size() - 1 - i);
+        }
+        ans += c1 - c2;
+        cout << ans << endl;
+    }
+}
+\end{lstlisting}
+
+\subsection{Insert}
+
+\subsubsection*{Enunciado}
+Há um array vazio \(A\). Para \(i = 1, 2, \dots, N\), execute a seguinte operação em ordem:
+\begin{itemize}
+    \item Insira o número \(i\) em \(A\) de modo que se torne o \(P_i\)-ésimo elemento a partir do início.
+    \begin{itemize}
+        \item Mais precisamente, substitua \(A\) pela concatenação dos primeiros \(P_i - 1\) elementos de \(A\), seguido por \(i\), e depois os elementos restantes de \(A\) a partir do \(P_i\)-ésimo elemento, nesta ordem.
+    \end{itemize}
+\end{itemize}
+Ao final, obtenha o array final \(A\).
+
+\subsubsection*{Restrições}
+\[
+1 \leq N \leq 5 \times 10^5
+\]
+\[
+1 \leq P_i \leq i \quad \text{para } i = 1, 2, \dots, N.
+\]
+Todos os valores de entrada são inteiros.
+
+\subsubsection*{Entrada}
+A entrada é fornecida a partir da entrada padrão no seguinte formato:
+\begin{verbatim}
+N
+P_1 P_2 ... P_N
+\end{verbatim}
+
+\subsubsection*{Saída}
+Seja o array final 
+\[
+A = (A_1, A_2, \dots, A_N).
+\]
+Imprima \(A_1, A_2, \dots, A_N\) nesta ordem, separados por espaços.
+
+\subsubsection*{Exemplo 1}
+\textbf{Input:}
+\begin{verbatim}
+4
+1 1 2 1
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+4 2 3 1
+\end{verbatim}
+
+\textbf{Explicação:}
+\begin{enumerate}
+    \item Insira o número \(1\) de modo que se torne o 1º elemento de \(A\). Agora, \(A = (1)\).
+    \item Insira o número \(2\) de modo que se torne o 1º elemento de \(A\). Agora, \(A = (2, 1)\).
+    \item Insira o número \(3\) de modo que se torne o 2º elemento de \(A\). Agora, \(A = (2, 3, 1)\).
+    \item Insira o número \(4\) de modo que se torne o 1º elemento de \(A\). Agora, \(A = (4, 2, 3, 1)\).
+\end{enumerate}
+
+\subsubsection*{Exemplo 2}
+\textbf{Input:}
+\begin{verbatim}
+5
+1 2 3 4 5
+\end{verbatim}
+
+\textbf{Output:}
+\begin{verbatim}
+1 2 3 4 5
+\end{verbatim}
+
+
+\begin{lstlisting}
+    struct BIT {
+    int n;
+    vector<int> tree;
+    BIT(int n): n(n), tree(n+1, 0) {}
+
+    void update(int idx, int delta) {
+        for(; idx <= n; idx += idx & -idx)
+            tree[idx] += delta;
+    }
+
+    int query(int idx) {
+        int sum = 0;
+        for(; idx; idx -= idx & -idx)
+            sum += tree[idx];
+        return sum;
+    }
+
+    int find(int k) {
+        int idx = 0;
+        for (int bit = 1 << 20; bit; bit >>= 1) {
+            int next = idx + bit;
+            if(next <= n && tree[next] < k) {
+                k -= tree[next];
+                idx = next;
+            }
+        }
+        return idx+1;
+    }
+};
+
+void solve() {
+    int n;
+    cin >> n;
+    vi p(n), a(n+1, 0);
+    for (auto &x : p) cin >> x;
+
+    BIT bit(n);
+    rep (i, 1, n+1)
+        bit.update(i, 1);
+
+
+    for(int i = n; i >= 1; i--) {
+        int pos = bit.find(p[i-1]);
+        a[pos] = i;
+        bit.update(pos, -1);
+    }
+
+    rep(i,1,n+1){
+        cout << a[i] << " ";
+    }
+    cout << endl;
+}
+\end{lstlisting}

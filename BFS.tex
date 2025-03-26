@@ -1,0 +1,692 @@
+\section{BFS}
+\subsection{Time To Live (TTL) - Problema de Alcance em Redes}
+
+\subsubsection*{Enunciado}
+
+Para evitar que mensagens de rede (pacotes) circulem indefinidamente dentro de uma rede, cada mensagem inclui um campo chamado \textbf{Time To Live (TTL)}. Esse campo contém o número de nós que podem retransmitir a mensagem antes que ela seja descartada.
+
+Cada vez que um nó recebe uma mensagem, ele decrementa o valor do campo TTL em 1. Se a mensagem deve ser encaminhada e o campo TTL for zero, ela não é retransmitida.
+
+Dado um conjunto de redes e consultas, determine quantos nós não são alcançáveis a partir de um nó inicial e um valor de TTL fornecido.
+
+\subsubsection*{Entrada}
+
+A entrada contém várias configurações de redes. Cada rede começa com um inteiro \( NC \), que especifica o número de conexões entre os nós. Um valor \( NC = 0 \) indica o fim da entrada.
+
+Após \( NC \), seguem \( NC \) pares de inteiros representando conexões diretas entre nós. Nenhuma rede terá mais de 30 nós.
+
+Após a descrição da rede, múltiplas consultas são fornecidas, compostas por dois inteiros: o nó inicial e o valor TTL. As consultas terminam com o par \( (0,0) \).
+
+\subsubsection*{Saída}
+
+Para cada consulta, exiba uma linha contendo:
+\begin{itemize}
+    \item O número do caso de teste.
+    \item A quantidade de nós inalcançáveis.
+    \item O nó inicial e o TTL fornecido.
+\end{itemize}
+
+O formato deve seguir o modelo:
+\begin{verbatim}
+Case X: Y nodes not reachable from node Z with TTL = T.
+\end{verbatim}
+
+\subsubsection*{Exemplo de Entrada e Saída}
+
+\textbf{Entrada:}
+\begin{verbatim}
+16
+10 15 15 20 20 25 10 30 30 47 47 50 25 45 45 65
+15 35 35 55 20 40 50 55 35 40 55 60 40 60 60 65
+35 2
+35 3
+0 0
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+Case 1: 5 nodes not reachable from node 35 with TTL = 2.
+Case 2: 1 nodes not reachable from node 35 with TTL = 3.
+\end{verbatim}
+
+\subsubsection*{Restrições}
+
+\begin{itemize}
+    \item \( 1 \leq NC \leq 30 \).
+    \item Cada rede tem no máximo 30 nós.
+    \item Cada consulta consiste em dois inteiros: nó inicial e TTL.
+    \item As consultas terminam com o par \( (0,0) \).
+\end{itemize}
+
+\subsubsection*{Solução}
+
+A solução emprega um algoritmo de \textbf{Busca em Largura (BFS)} para contar o número de nós alcançáveis a partir de um nó inicial dentro do limite imposto pelo TTL.
+
+\begin{lstlisting}[language=C++]
+int bfs(int start, map<int, vector<int>> &adj, int ttl) {
+    queue<int> q;
+    set<int> vis;
+    map<int, int> dist;
+    q.push(start);
+    vis.insert(start);
+    dist[start] = 0;
+
+    while (!q.empty()) {
+        int vertex = q.front();
+        q.pop();
+        if (dist[vertex] < ttl) {
+            for (auto neighbor : adj[vertex]) {
+                if (vis.find(neighbor) == vis.end()) {
+                    q.push(neighbor);
+                    vis.insert(neighbor);
+                    dist[neighbor] = dist[vertex] + 1;
+                }
+            }
+        }
+    }
+    return vis.size();
+}
+\end{lstlisting}
+
+\subsection{Bmail Computer Network}
+
+
+\subsubsection*{Enunciado}
+Era uma vez apenas um roteador na conhecida empresa Bmail. Os anos se passaram e, com o tempo, novos roteadores foram comprados. Cada vez que um novo roteador era adquirido, ele era conectado a um dos roteadores já comprados. Você recebe os valores $p_i$ --- o índice do roteador ao qual o $i$-ésimo roteador foi conectado após ser comprado (ou seja, $p_i < i$).
+
+Agora há $n$ roteadores na Boogle no total. Imprima a sequência de roteadores no caminho do primeiro até o $n$-ésimo roteador.
+
+\subsubsection*{Entrada}
+A primeira linha contém um número inteiro $n$ ($2 \le n \le 200000$) --- o número dos roteadores. A linha seguinte contém $n-1$ inteiros 
+\[
+p_2, p_3, \dots, p_n
+\]
+($1 \le p_i < i$), onde $p_i$ é igual ao índice do roteador ao qual o $i$-ésimo foi conectado após a compra.
+
+\subsubsection*{Saída}
+Imprima o caminho do $1$-ésimo ao $n$-ésimo roteador. O caminho deve começar com o roteador $1$ e terminar com o roteador $n$, com todos os elementos distintos.
+
+\subsubsection*{Exemplos}
+\textbf{Entrada:}
+\begin{verbatim}
+8
+1 1 2 2 3 2 5
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+1 2 5 8 
+\end{verbatim}
+
+\textbf{Entrada:}
+\begin{verbatim}
+6
+1 2 3 4 5
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+1 2 3 4 5 6 
+\end{verbatim}
+
+\textbf{Entrada:}
+\begin{verbatim}
+7
+1 1 2 3 4 3
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+1 3 7 
+\end{verbatim}
+
+\subsubsection*{Código em C++}
+\begin{lstlisting}[language=C++]
+
+vector<int> bfs(vector<vector<int>> &graph, int start, int end)
+{
+    queue<int> q;
+    unordered_map<int, bool> visited;
+    unordered_map<int, int> parent;
+
+    q.push(start);
+    visited[start] = true;
+
+    while (!q.empty())
+    {
+        int node = q.front();
+        q.pop();
+
+        if (node == end)
+        {
+            vector<int> path;
+            while (node != start)
+            {
+                path.push_back(node);
+                node = parent[node];
+            }
+            path.push_back(start);
+            reverse(path.begin(), path.end());
+            return path;
+        }
+
+        for (int neighbor : graph[node])
+        {
+            if (!visited[neighbor])
+            {
+                q.push(neighbor);
+                visited[neighbor] = true;
+                parent[neighbor] = node;
+            }
+        }
+    }
+    return {};
+}
+
+int main()
+{
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+    int n, x;
+    cin >> n;
+    vector<vector<int>> graph(n + 1);
+
+    for (int i = 2; i <= n; i++)
+    {
+        cin >> x;
+        graph[i].push_back(x);
+        graph[x].push_back(i);
+    }
+
+    for (auto i : bfs(graph, 1, n))
+        cout << i << " ";
+
+    cout << endl;
+    return 0;
+}
+\end{lstlisting}
+
+
+\subsection{Unlock the Lock}
+
+\subsubsection*{Enunciado}
+Mr. Ferdaus criou um tipo especial de cadeado de 4 dígitos, denominado \textit{FeruLock}, mostrado na figura à esquerda. O cadeado sempre exibe um valor de 4 dígitos e possui um código de desbloqueio específico (um valor inteiro). O cadeado é destravado somente quando o código de desbloqueio é exibido. Esse código pode ser rapidamente apresentado com a ajuda de alguns botões especiais disponíveis no cadeado. Cada botão tem um número associado a ele. Quando qualquer um desses botões é pressionado, o número associado é somado ao valor exibido, e assim um novo número é mostrado. O cadeado utiliza sempre os 4 dígitos menos significativos após a adição.
+
+Após criar esse cadeado, Mr. Ferdaus descobriu que também era muito difícil desbloquear o \textit{FeruLock}. Como um bom amigo de Ferdaus, sua tarefa é criar um programa que o ajude a desbloquear o \textit{FeruLock} pressionando esses botões o mínimo número de vezes possível.
+
+\subsubsection*{Entrada}
+Haverá no máximo 100 casos de teste. Para cada caso de teste, serão fornecidos 3 números: \(L\), \(U\) e \(R\), onde:
+\begin{itemize}
+    \item \(L\) (\(0000 \le L \le 9999\)) representa o código atual do cadeado.
+    \item \(U\) (\(0000 \le U \le 9999\)) representa o código de desbloqueio.
+    \item \(R\) (\(1 \le R \le 10\)) representa o número de botões disponíveis.
+\end{itemize}
+Em seguida, há \(R\) números (\(0 \le RVi \le 9999\)) em uma única linha, representando o valor dos botões. Os valores de \(L\), \(U\) e \(RVi\) serão sempre apresentados com 4 dígitos (completados com zeros à esquerda, se necessário). A entrada é finalizada quando \(L = U = R = 0\).
+
+\subsubsection*{Saída}
+Para cada caso de teste, imprima uma linha de saída que contenha o número do caso seguido pelo mínimo número de pressionamentos de botão necessários para desbloquear o cadeado. Se não for possível desbloquear o cadeado, imprima a mensagem \texttt{Permanently Locked}.
+
+\subsubsection*{Exemplos}
+
+\textbf{Entrada:}
+\begin{verbatim}
+0000 9999 1
+1000
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+Case 1: Permanently Locked
+\end{verbatim}
+
+\textbf{Entrada:}
+\begin{verbatim}
+0000 9999 1
+0001
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+Case 2: 9999
+\end{verbatim}
+
+\textbf{Entrada:}
+\begin{verbatim}
+5234 1212 3
+1023 0101 0001
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+Case 3: 48
+\end{verbatim}
+
+\subsubsection*{Código em C++}
+\begin{lstlisting}
+void solve()
+{
+    int l, u, r, cs = 1;
+    
+    while(cin >> l >> u >> r && (l || u || r)){
+        vi rv(r), dist(1e5+10, -1);
+        rep(i, 0, r) cin >> rv[i];
+        dist[l] = 0;
+        queue<int> q;
+        q.push(l);
+        while(!q.empty()){
+            int x = q.front(); q.pop();
+            rep(i, 0, r){
+                int v = (x + rv[i]) % 10000;
+                if(dist[v] == -1){
+                    dist[v] = dist[x] + 1;
+                    q.push(v);
+                }
+            }
+        }
+        cout << "Case " << cs++ << ": ";
+        if(dist[u] != -1) cout << dist[u] << endl;
+        else cout << "Permanently Locked\n";
+    }
+}
+\end{lstlisting}
+
+\subsection{Word Transformation}
+
+\subsubsection*{Enunciado}
+Um quebra-cabeça de palavras comum encontrado em muitos jornais e revistas é a transformação de palavras. Dado uma palavra inicial, pode-se, alterando sucessivamente uma única letra para formar uma nova palavra, construir uma sequência que transforma a palavra original em uma palavra final determinada. Por exemplo, a palavra \texttt{spice} pode ser transformada em \texttt{stock} em quatro etapas segundo a seguinte sequência:
+\begin{center}
+\texttt{spice, slice, slick, stick, stock}
+\end{center}
+Cada palavra sucessiva difere da anterior em apenas uma posição de caractere, mantendo o mesmo comprimento.
+
+Dado um dicionário de palavras a partir do qual as transformações podem ser feitas, além de uma lista de palavras iniciais e finais, sua tarefa é determinar o número mínimo de passos na transformação mais curta possível.
+
+\subsubsection*{Entrada}
+A primeira linha da entrada contém um inteiro \(N\), indicando o número de conjuntos de teste. Cada conjunto de teste possui duas seções:
+\begin{itemize}
+    \item \textbf{Dicionário:} Cada palavra é dada em uma linha, terminado por uma linha contendo um asterisco (\texttt{*}). O dicionário pode conter até 200 palavras; todas serão formadas apenas por letras minúsculas e terão no máximo 10 caracteres.
+    \item \textbf{Transformações:} Após o dicionário, vêm pares de palavras, uma par por linha, separadas por um espaço. Estes pares representam a palavra inicial e a palavra final de uma transformação. Todas as transformações são possíveis usando o dicionário fornecido, e as palavras inicial e final aparecem no dicionário.
+\end{itemize}
+Conjuntos de teste consecutivos são separados por uma linha em branco.
+
+\subsubsection*{Saída}
+Para cada par de palavras de cada conjunto de teste, imprima uma linha com a palavra inicial, a palavra final e o número mínimo de passos na transformação, separados por um único espaço. Conjuntos de saída consecutivos devem ser separados por uma linha em branco.
+
+\subsubsection*{Exemplo}
+
+\textbf{Entrada:}
+\begin{verbatim}
+1
+dip
+lip
+mad
+map
+maple
+may
+pad
+pip
+pod
+pop
+sap
+sip
+slice
+slick
+spice
+stick
+stock
+*
+spice stock
+may pod
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+spice stock 4
+may pod 3
+\end{verbatim}
+
+\subsubsection*{Código em C++}
+\begin{lstlisting}
+void solve()
+{
+    string s;
+    // Cria um conjunto com todas as palavras do dicionário
+    set<string> st;
+    while(cin >> s && s != "*"){
+        st.insert(s);
+    }
+    string a, b;
+    cin.ignore();
+    
+    // Processa cada par de palavras (transformação)
+    while(getline(cin, s) && s != ""){
+        stringstream ss(s);
+        ss >> a >> b;
+        if(a == b){
+            cout << a << " " << b << " 0\n";
+            continue;
+        }
+        map<string, int> dist;
+        // Fila para a busca em largura (BFS)
+        queue<pair<string, int>> q;
+        q.push({a, 0});
+        dist[a] = 0;
+        while(!q.empty()){
+            auto [u, d] = q.front();
+            q.pop();
+            if(u == b){
+                cout << a << " " << b << " " << d << endl;
+                break;
+            }
+            // Tenta transformar a palavra u em outra palavra v do dicionário
+            for(auto &v : st){
+                if(v.size() != u.size()) continue;
+                int cnt = 0;
+                // Conta quantas posições diferem entre u e v
+                for (int i = 0; i < v.size(); i++){
+                    if(v[i] != u[i]) cnt++;
+                }
+                // Se diferem em apenas uma posição, essa é uma transformação válida
+                if(cnt == 1 && !dist.count(v)){
+                    dist[v] = d + 1;
+                    q.push({v, d + 1});
+                }
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+
+\subsection{Min of Restricted Sum}
+
+\subsubsection*{Enunciado}
+Você recebe inteiros \(N, M\) e três sequências inteiras de comprimento \(M\): 
+\[
+X = \bigl(X_1, X_2, \ldots, X_M\bigr),\quad
+Y = \bigl(Y_1, Y_2, \ldots, Y_M\bigr) \quad \text{e} \quad
+Z = \bigl(Z_1, Z_2, \ldots, Z_M\bigr).
+\]
+É garantido que todos os elementos de \(X\) e \(Y\) estão entre \(1\) e \(N\) (inclusive).
+
+Chamamos uma sequência de inteiros não negativos de comprimento \(N\),
+\[
+A = \bigl(A_1, A_2, \ldots, A_N\bigr),
+\]
+de \emph{boa sequência} se e somente se, para todo inteiro \(i\) com \(1 \le i \le M\), 
+\[
+A_{X_i} \oplus A_{Y_i} = Z_i.
+\]
+Determine se existe uma boa sequência e, se existir, encontre uma que minimize a soma de seus elementos, isto é, que minimize
+\[
+\sum_{i=1}^{N} A_i.
+\]
+
+\paragraph{Notas sobre XOR:} Para inteiros não negativos \(A\) e \(B\), o XOR, denotado por \(A \oplus B\), é definido da seguinte forma: na representação binária, o dígito correspondente à posição \(2^k\) (com \(k \ge 0\)) do resultado é \(1\) se e somente se exatamente um dos dígitos de \(A\) e \(B\) na mesma posição for \(1\); caso contrário, o dígito é \(0\). Por exemplo, \(3 \oplus 5 = 6\) (em binário: \(011 \oplus 101 = 110\)).
+
+\subsubsection*{Restrições}
+\begin{itemize}
+    \item \(1 \le N \le 2\times 10^5\).
+    \item \(0 \le M \le 10^5\).
+    \item \(1 \le X_i, Y_i \le N\) para todo \(i\).
+    \item \(0 \le Z_i \le 10^9\) para todo \(i\).
+    \item Todos os valores de entrada são inteiros.
+\end{itemize}
+
+\subsubsection*{Entrada}
+A entrada é fornecida a partir da entrada padrão no seguinte formato:
+\begin{verbatim}
+N M
+X_1 Y_1 Z_1
+X_2 Y_2 Z_2
+.
+.
+.
+X_M Y_M Z_M
+\end{verbatim}
+
+\subsubsection*{Saída}
+Se nenhuma boa sequência existir, imprima \(-1\). Caso contrário, imprima uma boa sequência que minimize a soma de seus elementos, separando os valores por espaços. Se houver mais de uma resposta com soma mínima, qualquer uma delas será aceita.
+
+\subsubsection*{Exemplo 1}
+\textbf{Entrada:}
+\begin{verbatim}
+3 2
+1 3 4
+1 2 3
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+0 3 4
+\end{verbatim}
+
+A sequência \(A = (0, 3, 4)\) é uma boa sequência, pois:
+\[
+A_1 \oplus A_2 = 0 \oplus 3 = 3 \quad \text{e} \quad A_1 \oplus A_3 = 0 \oplus 4 = 4.
+\]
+Embora outras boas sequências, como \((1,2,5)\) ou \((7,4,3)\), existam, a sequência \((0,3,4)\) possui a menor soma.
+
+\subsubsection*{Exemplo 2}
+\textbf{Entrada:}
+\begin{verbatim}
+3 3
+1 3 4
+1 2 3
+2 3 5
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+-1
+\end{verbatim}
+
+Nenhuma boa sequência existe neste caso.
+
+\subsubsection*{Exemplo 3}
+\textbf{Entrada:}
+\begin{verbatim}
+5 8
+4 2 4
+2 3 11
+3 4 15
+4 5 6
+3 2 11
+3 3 0
+3 1 9
+3 4 15
+\end{verbatim}
+\textbf{Saída:}
+\begin{verbatim}
+0 2 9 6 0
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve()
+{
+    int n, m; 
+    cin >> n >> m;
+    vector<vector<pair<int, int>>> graph(n);
+    for (int i = 0; i < m; i++){
+        int x, y, z; 
+        cin >> x >> y >> z;
+        x--, y--;
+        graph[x].push_back({y, z});
+        graph[y].push_back({x, z});
+    }
+    vector<int> a(n, -1);
+    bool ok = true;
+    for (int i = 0; i < n; i++){
+        if(a[i] == -1){
+            queue<int> q;
+            q.push(i);
+            a[i] = 0;
+            vector<int> cmp;
+            cmp.push_back(i);
+            while(!q.empty()){
+                int u = q.front(); 
+                q.pop();
+                for(auto [v, w] : graph[u]){
+                    if(a[v] == -1){
+                        a[v] = a[u] ^ w;
+                        q.push(v);
+                        cmp.push_back(v);
+                    }
+                    else if(a[v] != (a[u] ^ w)){
+                        ok = false;
+                        break;
+                    }
+                }
+                if(!ok) break;
+            }
+            if(!ok) break;
+            int r = 0;
+            for (int bit = 0; bit < 32; bit++){
+                int mask = 1 << bit;
+                int cnt = 0;
+                for (auto v : cmp){
+                    if(a[v] & mask) cnt++;
+                }
+                if(cnt > (int)cmp.size() - cnt)
+                    r |= mask;
+            }
+            for (auto v : cmp){
+                a[v] ^= r;
+            }
+        }
+        if(!ok) break;
+    }
+    if(!ok)
+        cout << -1 << endl;
+    else {
+        for(auto x : a)
+            cout << x << " ";
+        cout << endl;
+    }
+}
+\end{lstlisting}
+
+\subsection{Palindromic Shortest Path}
+
+\subsubsection*{Enunciado}
+Temos um grafo direcionado com \(N\) vértices, numerados de \(1, 2, \dots, N\). As informações sobre as arestas são dadas por \(N^2\) caracteres, ou seja, uma matriz onde o elemento \(C_{i,j}\) representa o rótulo da aresta do vértice \(i\) para o vértice \(j\). Cada \(C_{i,j}\) é uma letra minúscula do alfabeto inglês ou o caractere \texttt{-}, indicando que não há aresta entre os vértices \(i\) e \(j\).
+
+Se \(C_{i,j}\) for uma letra, existe exatamente uma aresta direcionada do vértice \(i\) para o vértice \(j\) rotulada como \(C_{i,j}\). Caso \(C_{i,j}\) seja \texttt{-}, não há aresta de \(i\) para \(j\).
+
+Para cada par \((i, j)\) com \(1 \le i, j \le N\), determine o comprimento do caminho mais curto (não necessariamente simples) do vértice \(i\) para o vértice \(j\) cuja concatenação dos rótulos das arestas forma um palíndromo. Se não existir tal caminho, a resposta é \(-1\).
+
+\subsubsection*{Entrada}
+A entrada é composta por:
+\begin{verbatim}
+N
+C_{1,1} C_{1,2} ... C_{1,N}
+C_{2,1} C_{2,2} ... C_{2,N}
+.
+.
+.
+C_{N,1} C_{N,2} ... C_{N,N}
+\end{verbatim}
+onde cada \(C_{i,j}\) é um caractere que representa o rótulo da aresta do vértice \(i\) para o vértice \(j\), ou \texttt{-} se não existir aresta.
+
+\subsubsection*{Saída}
+Imprima uma matriz \(N \times N\) onde o elemento na \(i\)-ésima linha e \(j\)-ésima coluna é o comprimento do caminho mais curto do vértice \(i\) para o vértice \(j\) cuja concatenação de rótulos forma um palíndromo. Caso não exista tal caminho, imprima \(-1\).
+
+\subsubsection*{Restrições}
+\[
+1 \le N \le 100
+\]
+Cada \(C_{i,j}\) é uma letra minúscula do alfabeto inglês ou \texttt{-}.
+
+\subsubsection*{Exemplo 1}
+\textbf{Entrada:}
+\begin{verbatim}
+4
+ab--
+--b-
+---a
+c---
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+0 1 2 4
+-1 0 1 -1
+3 -1 0 1
+1 -1 -1 0
+\end{verbatim}
+
+\subsubsection*{Exemplo 2}
+\textbf{Entrada:}
+\begin{verbatim}
+5
+us---
+-st--
+--s--
+u--s-
+---ts
+\end{verbatim}
+
+\textbf{Saída:}
+\begin{verbatim}
+0 1 3 -1 -1
+-1 0 1 -1 -1
+-1 -1 0 -1 -1
+1 3 -1 0 -1
+-1 -1 5 1 0
+\end{verbatim}
+
+\subsubsection*{Solução}
+\begin{lstlisting}[language=C++]
+void solve(){
+    int n;
+    cin >> n;
+    vector<string> s(n);
+    for(auto &str : s)
+        cin >> str;
+    
+    // Inicializa a matriz de distâncias com INF.
+    vvi dist(n, vi(n, INF));
+    queue<pii> q;
+    
+    // Para cada vértice, a distância dele para ele mesmo é 0.
+    for (int i = 0; i < n; i++){
+        q.push({i, i});
+        dist[i][i] = 0;
+    }
+    
+    // Se existir aresta de i para j, a distância é 1.
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < n; j++){
+            if(i == j || s[i][j] == '-')
+                continue;
+            q.push({i, j});
+            dist[i][j] = 1;
+        }
+    }
+    
+    // Propaga as distâncias usando uma busca em largura.
+    while(!q.empty()){
+        auto [i, j] = q.front();
+        q.pop();
+        for (int k = 0; k < n; k++){
+            for (int l = 0; l < n; l++){
+                // Verifica se há aresta de k para i e de j para l,
+                // e se os rótulos são iguais.
+                if(s[k][i] != '-' && s[j][l] != '-' &&
+                   s[j][l] == s[k][i] && dist[k][l] == INF){
+                    dist[k][l] = dist[i][j] + 2;
+                    q.push({k, l});
+                }
+            }
+        }
+    }
+    
+    // Imprime a matriz de distâncias.
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < n; j++){
+            cout << (dist[i][j] == INF ? -1 : dist[i][j])
+                 << (j == n-1 ? "\n" : " ");
+        }
+    }
+}
+\end{lstlisting}

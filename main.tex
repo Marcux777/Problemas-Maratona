@@ -1,0 +1,58 @@
+\documentclass[twocolumn]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{pgfpages}
+
+
+% Configuração básica para o ambiente listings
+\lstset{
+  language=C++,
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{green},
+  stringstyle=\color{red},
+  literate=
+    {á}{{\'a}}1 {à}{{\`a}}1 {â}{{\^a}}1 {ã}{{\~a}}1 {é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ô}{{\^o}}1 {õ}{{\~o}}1 {ú}{{\'u}}1 {ç}{{\c{c}}}1 {ü}{{\"u}}1
+    {Á}{{\'A}}1 {À}{{\`A}}1 {Â}{{\^A}}1 {Ã}{{\~A}}1 {É}{{\'E}}1 {È}{{\`E}}1 {Ê}{{\^E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ô}{{\^O}}1 {Õ}{{\~O}}1 {Ú}{{\'U}}1 {Ç}{{\c{C}}}1 {Ü}{{\"U}}1
+}
+
+
+\begin{document}
+\tableofcontents
+\newpage
+
+\input{CodigoTemplate}
+\newpage
+\input{BFS}
+\newpage
+\input{DFS}
+\newpage
+\input{Dijkstra}
+\newpage
+\input{DynamicProgramming}
+\newpage
+\input{Ordered_set}
+\newpage
+\input{Fenwick}
+\newpage
+\input{BuscaBinaria}
+\newpage
+\input{DSU}
+\newpage
+\input{Componentes_Fortemente_Conexos}
+\newpage
+\input{MST}
+\newpage
+\input{LCA}
+\newpage
+
+\end{document}
